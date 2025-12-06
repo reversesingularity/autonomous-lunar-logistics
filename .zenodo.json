@@ -21,20 +21,9 @@
     "AI safety"
   ],
   "license": "MIT",
-  "upload_type": "other",
+  "upload_type": "publication",
+  "publication_type": "workingpaper",
   "access_right": "open",
-  "resource_type": {
-    "title": "Technical Specification",
-    "type": "publication"
-  },
-  "communities": [
-    {
-      "identifier": "aerospace"
-    },
-    {
-      "identifier": "machine-learning"
-    }
-  ],
   "related_identifiers": [
     {
       "identifier": "https://github.com/reversesingularity/autonomous-lunar-logistics",

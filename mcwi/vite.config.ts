@@ -17,7 +17,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Disable sourcemaps in production for smaller bundle
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Cesium is handled by vite-plugin-cesium, so don't include it here
+          vendor: ['react', 'react-dom', 'react-redux', '@reduxjs/toolkit'],
+        },
+      },
+    },
   },
   define: {
     // Cesium base URL for assets

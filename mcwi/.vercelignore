@@ -1,0 +1,37 @@
+# Vercel Ignore File
+
+# Dependencies
+node_modules/
+
+# Development files
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+coverage/
+
+# Documentation (not needed for build)
+docs/
+*.md
+!README.md
+
+# Source maps (will be generated fresh)
+*.map

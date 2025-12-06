@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Constitutional compliance check
+  constitution-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check segment boundaries
+        run: |
+          echo "Checking for cross-segment imports..."
+          # Add boundary violation detection here
+          
+      - name: Validate contract versions
+        run: |
+          echo "Validating shared-contracts compatibility..."
+          # Add contract validation here
+
+  # MCWI (Web Interface) tests
+  mcwi:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcwi
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: mcwi/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Lint
+        run: npm run lint
+        
+      - name: Type check
+        run: npm run type-check
+        
+      - name: Test
+        run: npm test
+        
+      - name: Build
+        run: npm run build
+
+  # GSC (Simulation) tests
+  gsc:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gsc
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: gsc/requirements.txt
+          
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        
+      - name: Lint
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          
+      - name: Test
+        run: pytest
+
+  # OAS tests (when implemented)
+  oas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: oas
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check OAS structure
+        run: |
+          echo "OAS segment structure check..."
+          ls -la || true
+
+  # Integration tests
+  integration:
+    needs: [mcwi, gsc, oas]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run integration tests
+        run: |
+          echo "Integration tests placeholder..."
+          # docker-compose -f integration-tests/docker-compose.yml up --abort-on-container-exit

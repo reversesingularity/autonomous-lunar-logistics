@@ -1,0 +1,46 @@
+{
+  "title": "Autonomous Lunar Logistics System (ALLS)",
+  "description": "An educational demonstration of AI-powered mission planning and fleet monitoring concepts for autonomous spacecraft operations. Features multi-agent coordination, digital twin visualization, and edge autonomy concepts for lunar logistics scenarios.",
+  "creators": [
+    {
+      "name": "Modina, Christopher",
+      "orcid": "0009-0004-9525-0631",
+      "affiliation": "Independent Researcher"
+    }
+  ],
+  "keywords": [
+    "autonomous systems",
+    "spacecraft",
+    "mission planning",
+    "reinforcement learning",
+    "multi-agent systems",
+    "digital twin",
+    "lunar exploration",
+    "aerospace education",
+    "fleet coordination",
+    "AI safety"
+  ],
+  "license": "MIT",
+  "upload_type": "other",
+  "access_right": "open",
+  "resource_type": {
+    "title": "Technical Specification",
+    "type": "publication"
+  },
+  "communities": [
+    {
+      "identifier": "aerospace"
+    },
+    {
+      "identifier": "machine-learning"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/reversesingularity/autonomous-lunar-logistics",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ],
+  "notes": "SPECIFICATION PHASE: This repository contains the architectural specification and design documents for an educational demonstration of autonomous spacecraft mission planning. Implementation is in progress. This is NOT certified for actual spaceflight operations."
+}

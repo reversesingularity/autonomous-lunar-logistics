@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: "Autonomous Lunar Logistics System (ALLS)"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: "Modina"
+    given-names: "Christopher"
+    orcid: "https://orcid.org/0009-0004-9525-0631"
+    affiliation: "Independent Researcher"
+repository-code: "https://github.com/reversesingularity/autonomous-lunar-logistics"
+url: "https://github.com/reversesingularity/autonomous-lunar-logistics"
+abstract: >-
+  An educational demonstration of AI-powered mission planning and fleet 
+  monitoring concepts for autonomous spacecraft operations. Features 
+  multi-agent coordination, digital twin visualization, and edge autonomy 
+  concepts for lunar logistics scenarios.
+keywords:
+  - autonomous-systems
+  - spacecraft
+  - mission-planning
+  - reinforcement-learning
+  - multi-agent-systems
+  - digital-twin
+  - lunar-exploration
+  - aerospace-education
+  - fleet-coordination
+license: MIT
+version: "0.1.0-spec"
+date-released: "2025-12-06"
+doi: "10.5281/zenodo.XXXXXXX"  # Will be assigned by Zenodo
+
+references:
+  - type: article
+    title: "Strategic Architecture for Autonomous Lunar Logistics"
+    authors:
+      - family-names: "Modina"
+        given-names: "Christopher"
+    year: 2025
+    notes: "Conceptual architecture document included in repository"

@@ -19,8 +19,8 @@ import 'cesium/Build/Cesium/Widgets/widgets.css';
 import type { ShipStatus, MissionPhase } from '../types';
 import './CesiumViewer.css';
 
-// Starship image path
-const STARSHIP_IMAGE = '/starship.png';
+// Starship image path - use resized icon for performance
+const STARSHIP_IMAGE = '/starship-icon.png';
 
 // Set Cesium Ion token from environment
 const CESIUM_ION_TOKEN = import.meta.env.VITE_CESIUM_ION_TOKEN || '';
@@ -219,31 +219,25 @@ export function CesiumGlobeViewer({
             id: entityId,
             name: ship.shipName,
             position: cartesian,
-            // Use billboard with Starship image instead of colored dots
+            // Use billboard with Starship image - NO color tinting to preserve original look
             billboard: {
               image: STARSHIP_IMAGE,
               width: isSelected ? 64 : 48,
               height: isSelected ? 64 : 48,
-              color: color, // Tint the image based on health status
+              // Keep original image colors - don't tint
+              color: Color.WHITE,
               verticalOrigin: VerticalOrigin.CENTER,
               horizontalOrigin: HorizontalOrigin.CENTER,
               scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.3),
-              // Add glow effect for selected ships
-              ...(isSelected && {
-                color: Color.WHITE,
-              }),
             },
-            // Add a colored ring under selected ships
-            ...(isSelected && {
-              ellipse: {
-                semiMinorAxis: 50000,
-                semiMajorAxis: 50000,
-                material: color.withAlpha(0.3),
-                outline: true,
-                outlineColor: color,
-                outlineWidth: 2,
-              },
-            }),
+            // Add a colored status indicator point below/beside the ship
+            point: {
+              pixelSize: isSelected ? 14 : 10,
+              color: color,
+              outlineColor: isSelected ? Color.WHITE : Color.BLACK,
+              outlineWidth: isSelected ? 2 : 1,
+              scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.5),
+            },
             label: showLabels ? {
               text: ship.shipName,
               font: '12px sans-serif',

@@ -151,16 +151,99 @@
   letter-spacing: 0.05em;
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 900px) {
   .header {
     flex-wrap: wrap;
     gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
   }
   
   .header-stats {
     order: 3;
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* Responsive - Phone */
+@media (max-width: 600px) {
+  .header {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  
+  .header-brand {
+    gap: var(--spacing-sm);
+  }
+  
+  .header-logo {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .header-title h1 {
+    font-size: 1rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.625rem;
+  }
+  
+  .header-stats {
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+  
+  .stat-group {
+    min-width: 60px;
+  }
+  
+  .stat-value {
+    font-size: 1rem;
+  }
+  
+  .stat-divider {
+    height: 24px;
+  }
+  
+  .status-badge {
+    font-size: 0.75rem;
+  }
+  
+  .header-time {
+    display: none; /* Hide time on very small screens */
+  }
+  
+  .connection-status {
+    min-width: auto;
+  }
+  
+  .data-source-badge {
+    padding: 6px 10px; /* Larger touch target */
+  }
+  
+  .data-source-label {
+    display: none; /* Just show the dot on phones */
+  }
+  
+  .connection-dot {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 400px) {
+  .header-stats {
+    justify-content: space-around;
+  }
+  
+  .stat-group:nth-child(n+3) {
+    display: none; /* Hide extra stats on tiny screens */
+  }
+  
+  .stat-divider {
+    display: none;
   }
 }

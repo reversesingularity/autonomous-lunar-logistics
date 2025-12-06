@@ -1,0 +1,307 @@
+/* CesiumViewer.css - Styles for 3D Globe Component */
+
+.cesium-viewer-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cesium-viewer-container.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #a0a0b0;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Cesium viewer overrides */
+.cesium-viewer {
+  border-radius: 8px;
+}
+
+.cesium-viewer .cesium-widget-credits {
+  display: none !important;
+}
+
+.cesium-viewer .cesium-viewer-toolbar {
+  display: none;
+}
+
+/* View Controls Panel */
+.view-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(10, 10, 26, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 100;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  min-width: 100px;
+}
+
+.view-controls-header {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+  padding: 0 4px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #d1d5db;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.view-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #fff;
+}
+
+.view-btn.active {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.view-controls-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 4px 0;
+}
+
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.view-toggle input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.view-toggle:hover {
+  color: #d1d5db;
+}
+
+/* Ship count overlay */
+.ship-count-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(10, 10, 26, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 100;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.ship-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #3b82f6;
+  line-height: 1;
+}
+
+.ship-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+/* Selected ship overlay */
+.selected-ship-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 10, 26, 0.95);
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  padding: 8px 12px 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.selected-ship-overlay span {
+  font-size: 13px;
+  color: #d1d5db;
+}
+
+.selected-ship-overlay button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 4px;
+  color: #ef4444;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.selected-ship-overlay button:hover {
+  background: rgba(239, 68, 68, 0.4);
+  border-color: #ef4444;
+}
+
+/* Confidence cone visualization */
+.confidence-cone {
+  opacity: 0.3;
+}
+
+/* Phase-specific colors */
+.phase-pre-launch { --phase-color: #6b7280; }
+.phase-ascent { --phase-color: #f59e0b; }
+.phase-earth-orbit { --phase-color: #3b82f6; }
+.phase-transit { --phase-color: #8b5cf6; }
+.phase-lunar-orbit { --phase-color: #6366f1; }
+.phase-descent { --phase-color: #ec4899; }
+.phase-surface { --phase-color: #10b981; }
+.phase-return { --phase-color: #14b8a6; }
+.phase-complete { --phase-color: #22c55e; }
+
+/* Tooltip styling for ship info */
+.ship-tooltip {
+  background: rgba(10, 10, 26, 0.95);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.ship-tooltip-name {
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.ship-tooltip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .view-controls {
+    top: 8px;
+    left: 8px;
+    padding: 6px;
+  }
+
+  .view-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .ship-count-overlay {
+    top: 8px;
+    right: 8px;
+    padding: 8px 10px;
+  }
+
+  .ship-count {
+    font-size: 20px;
+  }
+
+  .selected-ship-overlay {
+    bottom: 8px;
+    padding: 6px 10px 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .cesium-viewer-container {
+    background: linear-gradient(135deg, #000010 0%, #0a0a1a 100%);
+  }
+}
+
+/* Accessibility - reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+    border-top-color: #3b82f6;
+  }
+
+  .selected-ship-overlay {
+    animation: none;
+  }
+}

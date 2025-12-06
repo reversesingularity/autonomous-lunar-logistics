@@ -1,4 +1,4 @@
-import type { FleetStatus, HealthStatus } from '../types';
+import type { FleetStatus } from '../types';
 import './Header.css';
 
 interface HeaderProps {
@@ -6,15 +6,6 @@ interface HeaderProps {
 }
 
 export function Header({ fleetStatus }: HeaderProps) {
-  const getHealthClass = (health: HealthStatus): string => {
-    switch (health) {
-      case 1: return 'nominal';
-      case 2: return 'warning';
-      case 3: return 'critical';
-      default: return '';
-    }
-  };
-
   const criticalCount = fleetStatus?.ships.filter(s => s.overallHealth === 3).length || 0;
   const warningCount = fleetStatus?.ships.filter(s => s.overallHealth === 2).length || 0;
   const nominalCount = fleetStatus?.ships.filter(s => s.overallHealth === 1).length || 0;

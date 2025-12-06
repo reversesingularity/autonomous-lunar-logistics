@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ShipStatus, TelemetryPacket, AIDecisionLog } from '../types';
-import { generateTelemetryHistory } from '../utils/mockData';
+import type { ShipStatus } from '../types';
 import './ShipDetailPanel.css';
 
 interface ShipDetailPanelProps {

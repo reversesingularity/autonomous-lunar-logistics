@@ -202,54 +202,54 @@ export function CesiumGlobeViewer({
       let entity = currentEntities.get(entityId);
 
       if (entity) {
-        // Update existing entity position directly
-        (entity.position as any).setValue(cartesian);
-        if (entity.point) {
-          (entity.point.color as any).setValue(color);
-          (entity.point.pixelSize as any).setValue(isSelected ? 16 : 12);
-          (entity.point.outlineColor as any).setValue(isSelected ? Color.WHITE : Color.BLACK);
-          (entity.point.outlineWidth as any).setValue(isSelected ? 3 : 1);
+        // Update existing entity - remove and re-add for simplicity
+        // (Cesium's property system is complex for dynamic updates)
+        viewer.entities.remove(entity);
+        currentEntities.delete(entityId);
+        entity = undefined;
+      }
+      
+      // Create new entity (or recreate updated one)
+      if (!entity) {
+        try {
+          entity = viewer.entities.add({
+            id: entityId,
+            name: ship.shipName,
+            position: cartesian,
+            point: {
+              pixelSize: isSelected ? 16 : 12,
+              color: color,
+              outlineColor: isSelected ? Color.WHITE : Color.BLACK,
+              outlineWidth: isSelected ? 3 : 1,
+              scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.5),
+            },
+            label: showLabels ? {
+              text: ship.shipName,
+              font: '12px sans-serif',
+              fillColor: Color.WHITE,
+              outlineColor: Color.BLACK,
+              outlineWidth: 2,
+              style: LabelStyle.FILL_AND_OUTLINE,
+              verticalOrigin: VerticalOrigin.BOTTOM,
+              horizontalOrigin: HorizontalOrigin.CENTER,
+              pixelOffset: new Cartesian2(0, -20),
+              scaleByDistance: new NearFarScalar(1e6, 1, 1e9, 0.3),
+              distanceDisplayCondition: new DistanceDisplayCondition(0, 5e8),
+            } : undefined,
+            description: `
+              <div style="font-family: sans-serif; padding: 8px;">
+                <h3 style="margin: 0 0 8px 0;">${ship.shipName}</h3>
+                <p><strong>ID:</strong> ${ship.shipId}</p>
+                <p><strong>Phase:</strong> ${getPhaseName(ship.phase)}</p>
+                <p><strong>AI Confidence:</strong> ${(ship.aiConfidence * 100).toFixed(1)}%</p>
+                <p><strong>Objective:</strong> ${ship.currentObjective}</p>
+              </div>
+            `,
+          });
+          currentEntities.set(entityId, entity);
+        } catch (err) {
+          console.warn(`Failed to create entity for ship ${ship.shipId}:`, err);
         }
-        if (entity.label) {
-          (entity.label.show as any).setValue(showLabels);
-        }
-      } else {
-        // Create new entity
-        entity = viewer.entities.add({
-          id: entityId,
-          name: ship.shipName,
-          position: cartesian,
-          point: {
-            pixelSize: isSelected ? 16 : 12,
-            color: color,
-            outlineColor: isSelected ? Color.WHITE : Color.BLACK,
-            outlineWidth: isSelected ? 3 : 1,
-            scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.5),
-          },
-          label: showLabels ? {
-            text: ship.shipName,
-            font: '12px sans-serif',
-            fillColor: Color.WHITE,
-            outlineColor: Color.BLACK,
-            outlineWidth: 2,
-            style: LabelStyle.FILL_AND_OUTLINE,
-            verticalOrigin: VerticalOrigin.BOTTOM,
-            horizontalOrigin: HorizontalOrigin.CENTER,
-            pixelOffset: new Cartesian2(0, -20),
-            scaleByDistance: new NearFarScalar(1e6, 1, 1e9, 0.3),
-            distanceDisplayCondition: new DistanceDisplayCondition(0, 5e8),
-          } : undefined,
-          description: `
-            <div style="font-family: sans-serif; padding: 8px;">
-              <h3 style="margin: 0 0 8px 0;">${ship.shipName}</h3>
-              <p><strong>ID:</strong> ${ship.shipId}</p>
-              <p><strong>Phase:</strong> ${getPhaseName(ship.phase)}</p>
-              <p><strong>AI Confidence:</strong> ${(ship.aiConfidence * 100).toFixed(1)}%</p>
-              <p><strong>Objective:</strong> ${ship.currentObjective}</p>
-            </div>
-          `,
-        });
-        currentEntities.set(entityId, entity);
       }
     });
 

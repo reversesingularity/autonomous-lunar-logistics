@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package alls.ai;
+
+option go_package = "github.com/reversesingularity/autonomous-lunar-logistics/shared-contracts/generated/go/ai";
+
+import "telemetry.proto";
+
+// Impact assessment of AI decision
+enum DecisionImpact {
+  DECISION_IMPACT_UNSPECIFIED = 0;
+  DECISION_IMPACT_NOMINAL = 1;
+  DECISION_IMPACT_DEGRADED = 2;
+  DECISION_IMPACT_CRITICAL = 3;
+}
+
+// AI decision log entry - for explainability
+message AIDecisionLog {
+  string event_id = 1;
+  string timestamp = 2;
+  string ship_id = 3;
+  
+  // What triggered the decision
+  string trigger = 4;
+  string trigger_details = 5;
+  
+  // What the AI decided
+  string action = 6;
+  string action_details = 7;
+  
+  // Alternatives considered
+  repeated Alternative alternatives = 8;
+  
+  // Confidence and impact
+  double confidence = 9;  // 0-1
+  DecisionImpact impact = 10;
+  
+  // Supporting data
+  alls.telemetry.TelemetryPacket telemetry_snapshot = 11;
+  
+  // Constraints that influenced decision
+  repeated string relevant_constraints = 12;
+  
+  // Human-readable explanation
+  string explanation = 13;
+}
+
+// Alternative action that was considered
+message Alternative {
+  string action = 1;
+  double confidence = 2;
+  string rejection_reason = 3;
+}
+
+// Anomaly detection result
+message AnomalyDetection {
+  string anomaly_id = 1;
+  string timestamp = 2;
+  string ship_id = 3;
+  
+  string subsystem = 4;
+  double reconstruction_error = 5;  // From autoencoder
+  double threshold = 6;
+  
+  string classification = 7;  // UNKNOWN, THERMAL, PRESSURE, etc.
+  double severity_score = 8;  // 0-1
+  
+  // AI response
+  string ai_response = 9;
+  bool safe_mode_triggered = 10;
+}
+
+// Model inference metrics (for monitoring)
+message InferenceMetrics {
+  string ship_id = 1;
+  string timestamp = 2;
+  string model_version = 3;
+  
+  double inference_time_ms = 4;
+  double confidence = 5;
+  int32 constraints_evaluated = 6;
+  int32 constraints_violated = 7;
+}

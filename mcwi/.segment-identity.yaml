@@ -1,0 +1,54 @@
+segment:
+  name: "MCWI"
+  full_name: "Mission Control Web Interface"
+  repository: "reversesingularity/autonomous-lunar-logistics"
+  path: "mcwi/"
+
+sovereignty:
+  domain: "Human oversight, visualization, and strategic input"
+  languages:
+    allowed:
+      - "TypeScript"
+      - "JavaScript"
+      - "Go"
+      - "CSS"
+      - "HTML"
+    forbidden:
+      - "C++"
+      - "Python"
+      - "CUDA"
+  latency_ceiling_ms: 100
+  deployment_target: "Web servers, CDN, Vercel"
+
+authority:
+  owns:
+    - "Fleet visualization"
+    - "Alert display and management"
+    - "User authentication"
+    - "Strategic objective input"
+    - "Historical data querying"
+    - "Explainability interface"
+  does_not_own:
+    - "Flight control decisions"
+    - "Model training"
+    - "Real-time anomaly response"
+
+boundaries:
+  may_consume:
+    - "shared-contracts/protobuf/*"
+    - "FleetStatus (via WebSocket from GSC)"
+    - "PredictionResult (via API from GSC)"
+    - "TelemetryPacket (delayed, read-only)"
+  may_not_consume:
+    - "OAS source code"
+    - "GSC training data"
+    - "Direct spacecraft telemetry"
+  may_produce:
+    - "StrategicObjective (queued for review)"
+    - "HumanOverrideRequest (requires confirmation)"
+  may_not_produce:
+    - "Direct flight commands"
+    - "Training data modifications"
+
+contract_version: "1.0.0"
+constitution_version: "1.0.0"

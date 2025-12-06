@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # MCWI - Mission Control Web Interface
+  mcwi:
+    build:
+      context: ../mcwi
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - CESIUM_ION_TOKEN=${CESIUM_ION_TOKEN}
+    depends_on:
+      - gsc
+    networks:
+      - alls-network
+
+  # GSC - Ground Simulation Cluster
+  gsc:
+    build:
+      context: ../gsc
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - gsc-models:/app/models
+    networks:
+      - alls-network
+
+  # OAS Simulator (WebAssembly served via nginx)
+  oas-simulator:
+    build:
+      context: ../oas
+      dockerfile: Dockerfile.wasm
+    ports:
+      - "8080:80"
+    networks:
+      - alls-network
+
+  # Mock telemetry generator (for testing)
+  telemetry-mock:
+    build:
+      context: ./mocks/telemetry
+      dockerfile: Dockerfile
+    environment:
+      - SHIP_COUNT=10
+      - TELEMETRY_RATE_HZ=1
+    networks:
+      - alls-network
+
+networks:
+  alls-network:
+    driver: bridge
+
+volumes:
+  gsc-models:

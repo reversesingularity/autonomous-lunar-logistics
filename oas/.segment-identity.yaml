@@ -1,0 +1,52 @@
+segment:
+  name: "OAS"
+  full_name: "Onboard Autonomy Segment"
+  repository: "reversesingularity/autonomous-lunar-logistics"
+  path: "oas/"
+
+sovereignty:
+  domain: "Real-time flight control and safety systems"
+  languages:
+    allowed:
+      - "C++17"
+      - "C++20"
+      - "CUDA"
+      - "FPGA HDL"
+    forbidden:
+      - "Python"
+      - "JavaScript"
+      - "TypeScript"
+      - "Go"
+  latency_ceiling_ms: 10  # INVIOLABLE
+  deployment_target: "Spacecraft flight computers, WebAssembly (educational)"
+
+authority:
+  owns:
+    - "Flight dynamics control"
+    - "Engine gimbal control"
+    - "Propellant management"
+    - "Real-time anomaly response"
+    - "Safety constraint enforcement"
+  does_not_own:
+    - "Model training"
+    - "User interface"
+    - "Historical data storage"
+    - "Predictive modeling"
+
+boundaries:
+  may_consume:
+    - "shared-contracts/protobuf/*"
+    - "shared-contracts/safety-boundaries/*"
+  may_not_consume:
+    - "Any GSC code or services"
+    - "Any MCWI code or services"
+    - "External APIs requiring network"
+  may_produce:
+    - "TelemetryPacket"
+    - "AIDecisionLog"
+  may_not_produce:
+    - "Direct database writes"
+    - "User-facing content"
+
+contract_version: "1.0.0"
+constitution_version: "1.0.0"

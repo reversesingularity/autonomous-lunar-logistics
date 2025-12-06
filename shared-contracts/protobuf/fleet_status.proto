@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package alls.fleet;
+
+option go_package = "github.com/reversesingularity/autonomous-lunar-logistics/shared-contracts/generated/go/fleet";
+
+import "telemetry.proto";
+
+// Alert severity levels
+enum AlertSeverity {
+  ALERT_SEVERITY_UNSPECIFIED = 0;
+  ALERT_SEVERITY_INFO = 1;
+  ALERT_SEVERITY_WARNING = 2;
+  ALERT_SEVERITY_CRITICAL = 3;
+}
+
+// Alert message
+message Alert {
+  string alert_id = 1;
+  string ship_id = 2;
+  string timestamp = 3;
+  AlertSeverity severity = 4;
+  string title = 5;
+  string description = 6;
+  string subsystem = 7;
+  bool acknowledged = 8;
+  string acknowledged_by = 9;
+  string acknowledged_at = 10;
+}
+
+// Resource negotiation between ships
+message Negotiation {
+  string negotiation_id = 1;
+  string timestamp = 2;
+  repeated string participating_ships = 3;
+  string resource_type = 4;  // BANDWIDTH, POWER, TRAJECTORY
+  string status = 5;  // ACTIVE, RESOLVED, FAILED
+  string resolution = 6;
+}
+
+// Ship counts by mission phase
+message PhaseCount {
+  int32 prelaunch = 1;
+  int32 ascent = 2;
+  int32 transit = 3;
+  int32 orbit = 4;
+  int32 descent = 5;
+  int32 surface = 6;
+}
+
+// Overall fleet status - aggregated view
+message FleetStatus {
+  string timestamp = 1;
+  int32 total_ships = 2;
+  PhaseCount by_phase = 3;
+  repeated Alert active_alerts = 4;
+  repeated Negotiation active_negotiations = 5;
+  
+  // Fleet health summary
+  int32 ships_nominal = 6;
+  int32 ships_degraded = 7;
+  int32 ships_critical = 8;
+}
+
+// Individual ship summary for fleet view
+message ShipSummary {
+  string ship_id = 1;
+  string name = 2;
+  alls.telemetry.MissionPhase phase = 3;
+  string status = 4;  // NOMINAL, DEGRADED, CRITICAL
+  alls.telemetry.Position position = 5;
+  double fuel_percent = 6;
+  double battery_percent = 7;
+  int32 active_alerts = 8;
+}
+
+// Fleet telemetry stream message
+message FleetTelemetryUpdate {
+  FleetStatus status = 1;
+  repeated ShipSummary ships = 2;
+}

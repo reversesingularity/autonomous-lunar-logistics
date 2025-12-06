@@ -1,0 +1,82 @@
+# Operational Safety Boundaries
+# These limits are INVIOLABLE - defined in Project Constitution §5.3
+# Last Updated: 2025-12-06
+# Contract Version: 1.0.0
+
+operational_limits:
+  communication_gap:
+    parameter: communication_gap_hours
+    min: 0
+    max: 4      # CONSTITUTIONAL LIMIT
+    unit: hours
+    warning_threshold: 3
+    critical_threshold: 3.5
+    violation_action: PRIORITIZE_UPLINK
+    is_hard_limit: true
+    rationale: "Ground must have recent telemetry for safety"
+
+  fuel_reserve:
+    parameter: fuel_reserve_percent
+    min: 5      # CONSTITUTIONAL LIMIT
+    max: 100
+    unit: percent
+    warning_threshold: 10
+    critical_threshold: 7
+    violation_action: ABORT_TO_SAFE_ORBIT
+    is_hard_limit: true
+    rationale: "Minimum for emergency maneuvers"
+
+  trajectory_deviation:
+    parameter: trajectory_deviation_km
+    min: 0
+    max: 50     # Maximum off-nominal before correction
+    unit: km
+    warning_threshold: 30
+    critical_threshold: 45
+    violation_action: EXECUTE_CORRECTION_BURN
+    is_hard_limit: false
+    rationale: "Stay within planned corridor"
+
+  collision_distance:
+    parameter: closest_approach_km
+    min: 10     # Minimum safe distance between ships
+    max: null   # No maximum
+    unit: km
+    warning_threshold: 20
+    critical_threshold: 12
+    violation_action: EXECUTE_AVOIDANCE_MANEUVER
+    is_hard_limit: true
+    rationale: "Fleet collision prevention"
+
+  mission_time_variance:
+    parameter: mission_time_variance_percent
+    min: -10    # Can be ahead of schedule
+    max: 20     # Maximum delay
+    unit: percent
+    warning_threshold: 15
+    critical_threshold: 18
+    violation_action: REPLAN_MISSION
+    is_hard_limit: false
+    rationale: "Resource planning and coordination"
+
+  crew_radiation_dose:
+    parameter: radiation_dose_msv
+    min: 0
+    max: 50     # Annual limit (simplified)
+    unit: mSv
+    warning_threshold: 40
+    critical_threshold: 48
+    violation_action: INCREASE_SHIELDING_SEEK_SHELTER
+    is_hard_limit: true
+    rationale: "Crew health protection"
+
+  autonomy_confidence:
+    parameter: ai_confidence
+    min: 0.7    # Below this, request human input
+    max: 1.0
+    unit: ratio
+    warning_threshold: 0.75
+    critical_threshold: 0.72
+    violation_action: REQUEST_HUMAN_GUIDANCE
+    is_hard_limit: false
+    rationale: "AI should not act on low-confidence decisions"

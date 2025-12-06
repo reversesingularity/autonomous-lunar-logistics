@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package alls.telemetry;
+
+option go_package = "github.com/reversesingularity/autonomous-lunar-logistics/shared-contracts/generated/go/telemetry";
+
+// Reference frame for position coordinates
+enum ReferenceFrame {
+  REFERENCE_FRAME_UNSPECIFIED = 0;
+  REFERENCE_FRAME_HELIOCENTRIC = 1;
+  REFERENCE_FRAME_LUNAR = 2;
+  REFERENCE_FRAME_EARTH = 3;
+}
+
+// 3D vector for position and velocity
+message Vector3 {
+  double x = 1;  // km for position, km/s for velocity
+  double y = 2;
+  double z = 3;
+}
+
+// Quaternion for orientation
+message Quaternion {
+  double w = 1;
+  double x = 2;
+  double y = 3;
+  double z = 4;
+}
+
+// Position with reference frame
+message Position {
+  ReferenceFrame frame = 1;
+  double x = 2;  // km
+  double y = 3;  // km
+  double z = 4;  // km
+}
+
+// Propulsion subsystem status
+message PropulsionStatus {
+  repeated EngineStatus engines = 1;
+  double propellant_mass_kg = 2;
+  double oxidizer_mass_kg = 3;
+  double tank_pressure_kpa = 4;
+}
+
+message EngineStatus {
+  string engine_id = 1;
+  double throttle_percent = 2;  // 0-100
+  double gimbal_pitch_deg = 3;
+  double gimbal_yaw_deg = 4;
+  double chamber_pressure_kpa = 5;
+  bool healthy = 6;
+}
+
+// Thermal subsystem status
+message ThermalStatus {
+  double hull_temp_kelvin = 1;
+  double internal_temp_kelvin = 2;
+  double heat_shield_temp_kelvin = 3;
+  bool cooling_active = 4;
+  double radiator_efficiency = 5;  // 0-1
+}
+
+// Power subsystem status
+message PowerStatus {
+  double battery_level_percent = 1;  // 0-100
+  double solar_generation_kw = 2;
+  double power_consumption_kw = 3;
+  bool in_eclipse = 4;
+  double time_to_eclipse_sec = 5;
+}
+
+// Communications subsystem status
+message CommsStatus {
+  bool hga_active = 1;  // High-Gain Antenna
+  bool lga_active = 2;  // Low-Gain Antenna
+  double signal_strength_dbm = 3;
+  double data_rate_kbps = 4;
+  double time_since_last_uplink_sec = 5;
+  bool in_blackout = 6;
+}
+
+// AI state information
+message AIState {
+  string current_objective = 1;
+  double confidence = 2;  // 0-1
+  repeated string active_constraints = 3;
+  string current_mode = 4;  // NOMINAL, SAFE_MODE, AUTONOMOUS, etc.
+}
+
+// Main telemetry packet - sent from OAS to GSC/MCWI
+message TelemetryPacket {
+  string ship_id = 1;
+  string timestamp = 2;  // ISO8601 format
+  uint64 sequence_number = 3;
+  
+  Position position = 4;
+  Vector3 velocity = 5;
+  Quaternion orientation = 6;
+  Vector3 angular_rates = 7;  // rad/s
+  
+  PropulsionStatus propulsion = 8;
+  ThermalStatus thermal = 9;
+  PowerStatus power = 10;
+  CommsStatus comms = 11;
+  
+  AIState ai_state = 12;
+  
+  // Mission phase
+  MissionPhase phase = 13;
+}
+
+enum MissionPhase {
+  MISSION_PHASE_UNSPECIFIED = 0;
+  MISSION_PHASE_PRELAUNCH = 1;
+  MISSION_PHASE_ASCENT = 2;
+  MISSION_PHASE_TRANSIT = 3;
+  MISSION_PHASE_ORBIT = 4;
+  MISSION_PHASE_DESCENT = 5;
+  MISSION_PHASE_SURFACE = 6;
+}

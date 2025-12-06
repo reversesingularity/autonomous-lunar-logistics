@@ -13,15 +13,89 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Check segment boundaries
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install validators
+        run: pip install pyyaml
+      
+      - name: Validate segment identity files
+        run: |
+          python -c "
+          import yaml
+          import sys
+          
+          segments = ['mcwi', 'gsc', 'oas']
+          errors = []
+          
+          for seg in segments:
+              try:
+                  with open(f'{seg}/.segment-identity.yaml', 'r') as f:
+                      data = yaml.safe_load(f)
+                  
+                  # Required fields
+                  required = ['segment', 'sovereignty', 'authority', 'boundaries', 'contract_version']
+                  for field in required:
+                      if field not in data:
+                          errors.append(f'{seg}: missing required field \"{field}\"')
+                  
+                  print(f'✓ {seg}/.segment-identity.yaml is valid')
+              except Exception as e:
+                  errors.append(f'{seg}: {str(e)}')
+          
+          if errors:
+              print('\\n❌ Segment identity validation failed:')
+              for e in errors:
+                  print(f'  - {e}')
+              sys.exit(1)
+          
+          print('\\n✓ All segment identity files are valid')
+          "
+      
+      - name: Check contract version sync
+        run: |
+          CONTRACT_VERSION=$(cat shared-contracts/VERSION)
+          echo "Shared contracts version: $CONTRACT_VERSION"
+          
+          # Check each segment references the same contract version
+          for seg in mcwi gsc oas; do
+            if [ -f "$seg/.segment-identity.yaml" ]; then
+              SEG_VERSION=$(grep 'contract_version:' "$seg/.segment-identity.yaml" | cut -d'"' -f2)
+              if [ "$SEG_VERSION" != "$CONTRACT_VERSION" ]; then
+                echo "❌ $seg has contract_version $SEG_VERSION, expected $CONTRACT_VERSION"
+                exit 1
+              fi
+              echo "✓ $seg contract_version matches"
+            fi
+          done
+          
+          echo "✓ All segments synchronized to contract version $CONTRACT_VERSION"
+      
+      - name: Check for boundary violations
         run: |
           echo "Checking for cross-segment imports..."
-          # Add boundary violation detection here
           
-      - name: Validate contract versions
-        run: |
-          echo "Validating shared-contracts compatibility..."
-          # Add contract validation here
+          # OAS should not import from GSC or MCWI
+          if grep -r "from gsc\|import gsc\|from mcwi\|import mcwi" oas/src/ 2>/dev/null; then
+            echo "❌ OAS has forbidden imports from GSC or MCWI"
+            exit 1
+          fi
+          
+          # GSC should not import from OAS or MCWI
+          if grep -r "from oas\|import oas\|from mcwi\|import mcwi" gsc/src/ 2>/dev/null; then
+            echo "❌ GSC has forbidden imports from OAS or MCWI"
+            exit 1
+          fi
+          
+          # MCWI should not import from OAS or GSC directly
+          if grep -r "from '../oas\|from '../gsc\|require.*oas\|require.*gsc" mcwi/src/ 2>/dev/null; then
+            echo "❌ MCWI has forbidden imports from OAS or GSC"
+            exit 1
+          fi
+          
+          echo "✓ No cross-segment boundary violations detected"
 
   # MCWI (Web Interface) tests
   mcwi:

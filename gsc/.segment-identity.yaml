@@ -1,0 +1,52 @@
+segment:
+  name: "GSC"
+  full_name: "Ground Simulation Cluster"
+  repository: "reversesingularity/autonomous-lunar-logistics"
+  path: "gsc/"
+
+sovereignty:
+  domain: "AI training, simulation, and predictive modeling"
+  languages:
+    allowed:
+      - "Python 3.11+"
+      - "CUDA Python"
+      - "Jupyter Notebooks"
+    forbidden:
+      - "C++"
+      - "TypeScript"
+      - "Go"
+      - "JavaScript"
+  latency_ceiling_ms: null  # Asynchronous - no real-time guarantees
+  deployment_target: "Ground-based GPU clusters, Google Colab, Kaggle"
+
+authority:
+  owns:
+    - "Reinforcement learning training"
+    - "Digital Twin simulation"
+    - "Predictive state modeling"
+    - "Model versioning and deployment"
+    - "Simulation scenario management"
+  does_not_own:
+    - "Real-time flight decisions"
+    - "User interface rendering"
+    - "Live telemetry display"
+
+boundaries:
+  may_consume:
+    - "shared-contracts/protobuf/*"
+    - "TelemetryPacket (read-only, via message queue)"
+    - "OAS model binaries (for Digital Twin)"
+  may_not_consume:
+    - "OAS source code"
+    - "MCWI user data"
+    - "Direct spacecraft communication"
+  may_produce:
+    - "Trained model binaries"
+    - "PredictionResult"
+    - "SimulationReport"
+  may_not_produce:
+    - "Flight commands"
+    - "User-facing alerts"
+
+contract_version: "1.0.0"
+constitution_version: "1.0.0"

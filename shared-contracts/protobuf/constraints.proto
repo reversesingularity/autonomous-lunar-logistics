@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package alls.constraints;
+
+option go_package = "github.com/reversesingularity/autonomous-lunar-logistics/shared-contracts/generated/go/constraints";
+
+// Constraint types
+enum ConstraintType {
+  CONSTRAINT_TYPE_UNSPECIFIED = 0;
+  CONSTRAINT_TYPE_THERMAL = 1;
+  CONSTRAINT_TYPE_POWER = 2;
+  CONSTRAINT_TYPE_STRUCTURAL = 3;
+  CONSTRAINT_TYPE_OPERATIONAL = 4;
+  CONSTRAINT_TYPE_COMMUNICATION = 5;
+}
+
+// Constraint priority for conflict resolution
+enum ConstraintPriority {
+  CONSTRAINT_PRIORITY_UNSPECIFIED = 0;
+  CONSTRAINT_PRIORITY_ADVISORY = 1;      // Can be ignored with logging
+  CONSTRAINT_PRIORITY_IMPORTANT = 2;     // Should not be violated
+  CONSTRAINT_PRIORITY_CRITICAL = 3;      // Must not be violated
+  CONSTRAINT_PRIORITY_SAFETY = 4;        // NEVER violate - triggers safe mode
+}
+
+// Individual constraint definition
+message Constraint {
+  string constraint_id = 1;
+  string name = 2;
+  string description = 3;
+  
+  ConstraintType type = 4;
+  ConstraintPriority priority = 5;
+  
+  // The constraint expression (simplified DSL)
+  string expression = 6;  // e.g., "hull_temp_k < 400"
+  
+  // Threshold values
+  double warning_threshold = 7;
+  double critical_threshold = 8;
+  
+  // Response when violated
+  string violation_response = 9;  // e.g., "SHED_LOAD", "SAFE_MODE", "ALERT"
+}
+
+// Constraint evaluation result
+message ConstraintEvaluation {
+  string constraint_id = 1;
+  string timestamp = 2;
+  string ship_id = 3;
+  
+  bool satisfied = 4;
+  double current_value = 5;
+  double threshold_value = 6;
+  double margin = 7;  // How close to threshold (0-1, 1 = at threshold)
+  
+  string status = 8;  // NOMINAL, WARNING, VIOLATED
+}
+
+// Constraint conflict (when multiple constraints cannot all be satisfied)
+message ConstraintConflict {
+  string conflict_id = 1;
+  string timestamp = 2;
+  string ship_id = 3;
+  
+  repeated string conflicting_constraints = 4;
+  string resolution = 5;
+  string resolution_rationale = 6;
+}
+
+// Safety boundary definition (from YAML files)
+message SafetyBoundary {
+  string boundary_id = 1;
+  string category = 2;  // thermal, power, structural, operational
+  string parameter = 3;
+  
+  double min_value = 4;
+  double max_value = 5;
+  string unit = 6;
+  
+  string violation_action = 7;
+  bool is_hard_limit = 8;  // Cannot be overridden
+}

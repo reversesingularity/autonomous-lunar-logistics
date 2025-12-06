@@ -1,0 +1,60 @@
+# Thermal Safety Boundaries
+# These limits are INVIOLABLE - defined in Project Constitution §5.3
+# Last Updated: 2025-12-06
+# Contract Version: 1.0.0
+
+thermal_limits:
+  hull_temperature:
+    parameter: hull_temp_kelvin
+    min: 100    # Below this, systems may fail
+    max: 400    # CONSTITUTIONAL LIMIT - never exceed
+    unit: K
+    warning_threshold: 350
+    critical_threshold: 380
+    violation_action: REDUCE_POWER_SHED_LOAD
+    is_hard_limit: true
+    rationale: "Structural integrity compromised above 400K"
+
+  engine_temperature:
+    parameter: engine_temp_kelvin
+    min: 200
+    max: 3500   # Raptor operational limit
+    unit: K
+    warning_threshold: 3200
+    critical_threshold: 3400
+    violation_action: THROTTLE_DOWN
+    is_hard_limit: true
+    rationale: "Engine damage above 3500K"
+
+  heat_shield_temperature:
+    parameter: heat_shield_temp_kelvin
+    min: 100
+    max: 1900   # PICA-X rated limit
+    unit: K
+    warning_threshold: 1700
+    critical_threshold: 1850
+    violation_action: ADJUST_ATTITUDE
+    is_hard_limit: true
+    rationale: "Heat shield ablation accelerates above limit"
+
+  internal_cabin_temperature:
+    parameter: internal_temp_kelvin
+    min: 288    # 15°C
+    max: 303    # 30°C
+    unit: K
+    warning_threshold: 300
+    critical_threshold: 302
+    violation_action: ACTIVATE_COOLING
+    is_hard_limit: false  # Crew can tolerate brief excursions
+    rationale: "Crew comfort and safety"
+
+  battery_temperature:
+    parameter: battery_temp_kelvin
+    min: 273    # 0°C
+    max: 318    # 45°C
+    unit: K
+    warning_threshold: 310
+    critical_threshold: 315
+    violation_action: REDUCE_CHARGE_RATE
+    is_hard_limit: true
+    rationale: "Battery thermal runaway risk above limit"

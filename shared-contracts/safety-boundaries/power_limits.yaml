@@ -1,0 +1,60 @@
+# Power Safety Boundaries
+# These limits are INVIOLABLE - defined in Project Constitution §5.3
+# Last Updated: 2025-12-06
+# Contract Version: 1.0.0
+
+power_limits:
+  battery_level:
+    parameter: battery_level_percent
+    min: 20     # CONSTITUTIONAL LIMIT - never go below
+    max: 100
+    unit: percent
+    warning_threshold: 30
+    critical_threshold: 22
+    violation_action: EMERGENCY_LOAD_SHED
+    is_hard_limit: true
+    rationale: "Below 20%, insufficient power for safe mode operations"
+
+  discharge_rate:
+    parameter: discharge_rate_kw
+    min: 0
+    max: 500    # CONSTITUTIONAL LIMIT
+    unit: kW
+    warning_threshold: 400
+    critical_threshold: 480
+    violation_action: SHED_NON_CRITICAL_LOADS
+    is_hard_limit: true
+    rationale: "Battery damage from excessive discharge"
+
+  solar_array_voltage:
+    parameter: solar_array_voltage
+    min: 95     # Below minimum, arrays may be damaged
+    max: 135    # Above maximum, regulator damage
+    unit: V
+    warning_threshold: 130
+    critical_threshold: 133
+    violation_action: DISCONNECT_ARRAYS
+    is_hard_limit: true
+    rationale: "Electrical system protection"
+
+  power_bus_voltage:
+    parameter: power_bus_voltage
+    min: 24
+    max: 32
+    unit: V
+    warning_threshold: 30
+    critical_threshold: 31
+    violation_action: ACTIVATE_VOLTAGE_REGULATOR
+    is_hard_limit: false
+    rationale: "Nominal bus voltage range for avionics"
+
+  eclipse_reserve:
+    parameter: eclipse_reserve_percent
+    min: 40     # Must have 40% before entering eclipse
+    max: 100
+    unit: percent
+    warning_threshold: 50
+    critical_threshold: 42
+    violation_action: DELAY_ECLIPSE_ENTRY
+    is_hard_limit: true
+    rationale: "Sufficient power to survive eclipse duration"

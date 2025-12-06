@@ -1,0 +1,71 @@
+# Structural Safety Boundaries
+# These limits are INVIOLABLE - defined in Project Constitution §5.3
+# Last Updated: 2025-12-06
+# Contract Version: 1.0.0
+
+structural_limits:
+  acceleration:
+    parameter: acceleration_g
+    min: -3     # Negative G limit
+    max: 6      # CONSTITUTIONAL LIMIT
+    unit: g
+    warning_threshold: 5
+    critical_threshold: 5.5
+    violation_action: REDUCE_THRUST
+    is_hard_limit: true
+    rationale: "Structural integrity and crew safety above 6g"
+
+  dynamic_pressure:
+    parameter: dynamic_pressure_kpa
+    min: 0
+    max: 35     # CONSTITUTIONAL LIMIT (Max-Q)
+    unit: kPa
+    warning_threshold: 30
+    critical_threshold: 33
+    violation_action: THROTTLE_DOWN
+    is_hard_limit: true
+    rationale: "Aerodynamic stress limit during ascent"
+
+  tank_pressure:
+    parameter: tank_pressure_kpa
+    min: 100    # Minimum for proper propellant feed
+    max: 800    # Maximum rated pressure
+    unit: kPa
+    warning_threshold: 700
+    critical_threshold: 750
+    violation_action: VENT_EXCESS_PRESSURE
+    is_hard_limit: true
+    rationale: "Tank rupture prevention"
+
+  angular_rate:
+    parameter: angular_rate_deg_s
+    min: -30
+    max: 30     # Maximum rotation rate
+    unit: deg/s
+    warning_threshold: 25
+    critical_threshold: 28
+    violation_action: DAMPEN_ROTATION
+    is_hard_limit: true
+    rationale: "Control authority and structural loads"
+
+  landing_velocity:
+    parameter: landing_velocity_m_s
+    min: 0
+    max: 2      # Soft landing requirement
+    unit: m/s
+    warning_threshold: 1.5
+    critical_threshold: 1.8
+    violation_action: INCREASE_BRAKING
+    is_hard_limit: true
+    rationale: "Landing gear and payload survival"
+
+  vibration_amplitude:
+    parameter: vibration_g_rms
+    min: 0
+    max: 15     # Maximum RMS vibration
+    unit: g_rms
+    warning_threshold: 12
+    critical_threshold: 14
+    violation_action: REDUCE_THRUST_RATE
+    is_hard_limit: false
+    rationale: "Component fatigue prevention"

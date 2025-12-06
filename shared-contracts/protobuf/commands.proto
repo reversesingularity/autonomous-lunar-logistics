@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package alls.commands;
+
+option go_package = "github.com/reversesingularity/autonomous-lunar-logistics/shared-contracts/generated/go/commands";
+
+// Strategic objective types
+enum ObjectiveType {
+  OBJECTIVE_TYPE_UNSPECIFIED = 0;
+  OBJECTIVE_TYPE_TRANSIT = 1;
+  OBJECTIVE_TYPE_ORBIT_INSERTION = 2;
+  OBJECTIVE_TYPE_LANDING = 3;
+  OBJECTIVE_TYPE_SURFACE_OPS = 4;
+  OBJECTIVE_TYPE_RETURN = 5;
+  OBJECTIVE_TYPE_EMERGENCY = 6;
+}
+
+// Priority levels for objectives
+enum Priority {
+  PRIORITY_UNSPECIFIED = 0;
+  PRIORITY_LOW = 1;
+  PRIORITY_MEDIUM = 2;
+  PRIORITY_HIGH = 3;
+  PRIORITY_CRITICAL = 4;
+}
+
+// Strategic objective - sent from MCWI to GSC (queued, not direct)
+message StrategicObjective {
+  string objective_id = 1;
+  string ship_id = 2;
+  string created_at = 3;
+  string created_by = 4;  // User ID
+  
+  ObjectiveType type = 5;
+  Priority priority = 6;
+  
+  // Target parameters (context-dependent)
+  TargetParameters target = 7;
+  
+  // Constraints
+  repeated string required_constraints = 8;
+  
+  // Approval status
+  string status = 9;  // PENDING, APPROVED, REJECTED, EXECUTED
+  string approved_by = 10;
+  string approved_at = 11;
+}
+
+// Target parameters for objectives
+message TargetParameters {
+  // For orbital/landing objectives
+  double target_latitude = 1;
+  double target_longitude = 2;
+  double target_altitude_km = 3;
+  
+  // For transit objectives
+  string destination_body = 4;  // MOON, EARTH, etc.
+  string target_orbit = 5;  // LOW_LUNAR, HIGH_LUNAR, etc.
+  
+  // Timing
+  string earliest_start = 6;  // ISO8601
+  string latest_completion = 7;  // ISO8601
+}
+
+// Human override request - requires confirmation
+message HumanOverrideRequest {
+  string request_id = 1;
+  string ship_id = 2;
+  string timestamp = 3;
+  string requested_by = 4;
+  
+  string action = 5;
+  string justification = 6;
+  
+  // Safety check
+  repeated string safety_implications = 7;
+  bool requires_dual_confirmation = 8;
+  
+  // Confirmation
+  string confirmed_by = 9;
+  string confirmed_at = 10;
+  string status = 11;  // PENDING, CONFIRMED, REJECTED, EXPIRED
+}
+
+// Command acknowledgment
+message CommandAck {
+  string command_id = 1;
+  string ship_id = 2;
+  string timestamp = 3;
+  bool accepted = 4;
+  string rejection_reason = 5;
+  double estimated_execution_time_sec = 6;
+}

@@ -27,7 +27,7 @@ keywords:
 license: MIT
 version: "0.1.0-spec"
 date-released: "2025-12-06"
-doi: "10.5281/zenodo.XXXXXXX"  # Will be assigned by Zenodo
+doi: "10.5281/zenodo.17837420"
 
 references:
   - type: article

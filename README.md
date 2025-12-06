@@ -1,7 +1,7 @@
 # 🚀 Autonomous Lunar Logistics System (ALLS)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17837420.svg)](https://doi.org/10.5281/zenodo.17837420)
 [![Status: Specification](https://img.shields.io/badge/Status-Specification-orange.svg)]()
 [![Purpose: Educational](https://img.shields.io/badge/Purpose-Educational-blue.svg)]()
 
@@ -182,7 +182,7 @@ If you use this project in academic work, please cite:
   title        = {Autonomous Lunar Logistics System (ALLS)},
   year         = {2025},
   publisher    = {GitHub},
-  doi          = {10.5281/zenodo.XXXXXXX},
+  doi          = {10.5281/zenodo.17837420},
   url          = {https://github.com/reversesingularity/autonomous-lunar-logistics}
 }
 ```

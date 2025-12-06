@@ -1,86 +1,38 @@
-# MCWI - Mission Control Web Interface
+# Qwik + Vite
 
-> **Segment:** MCWI  
-> **Contract Version:** 1.0.0  
-> **Status:** 🚧 In Development
+## Qwik in CSR mode
 
-## Sovereign Domain
+This starter is using a pure CSR (Client-Side Rendering) mode. This means, that the application is fully bootstrapped in the browser. Most of Qwik innovations however take advantage of SSR (Server-Side Rendering) mode.
 
-Human oversight, visualization, and strategic input.
+```ts
+export default defineConfig({
+  plugins: [
+    qwikVite({
+      csr: true,
+    }),
+  ],
+})
+```
 
-## Technology Stack
+Use `npm create qwik@latest` to create a full production ready Qwik application, using SSR and [QwikCity](https://qwik.dev/docs/qwikcity/), our server-side metaframwork.
 
-| Component | Technology |
-|-----------|------------|
-| Framework | React 18 + TypeScript |
-| 3D Visualization | CesiumJS |
-| State Management | Redux Toolkit |
-| Backend | Go / Vercel Serverless |
-| Database | Supabase (PostgreSQL) |
-| Real-time | Supabase Realtime |
-
-## Authority
-
-This segment **OWNS**:
-- Fleet visualization
-- Alert display and management
-- User authentication
-- Strategic objective input
-- Historical data querying
-- Explainability interface
-
-This segment **DOES NOT OWN**:
-- Flight control decisions
-- Model training
-- Real-time anomaly response
-
-## Boundaries
-
-**May Consume:**
-- `shared-contracts/protobuf/*`
-- `FleetStatus` (via WebSocket from GSC)
-- `PredictionResult` (via API from GSC)
-- `TelemetryPacket` (delayed, read-only)
-
-**May NOT Consume:**
-- OAS source code
-- GSC training data
-- Direct spacecraft telemetry
-
-**May Produce:**
-- `StrategicObjective` (queued for review)
-- `HumanOverrideRequest` (requires confirmation)
-
-**May NOT Produce:**
-- Direct flight commands
-- Training data modifications
-
-## Setup
+## Usage
 
 ```bash
-cd mcwi
-npm install
-npm run dev
+$ npm install # or pnpm install or yarn install
 ```
 
-## Project Structure
+Learn more on the [Qwik Website](https://qwik.dev) and join our community on our [Discord](https://qwik.dev/chat)
 
-```
-mcwi/
-├── src/
-│   ├── components/       # React components
-│   ├── features/         # Redux slices
-│   ├── hooks/            # Custom hooks
-│   ├── services/         # API clients
-│   ├── types/            # TypeScript types (from protobuf)
-│   └── utils/            # Utilities
-├── public/
-└── package.json
-```
+## Available Scripts
 
-## Features (from SPEC-KIT)
+In the project directory, you can run:
 
-- [ ] F-001: Fleet Visualization Dashboard
-- [ ] F-002: Time Slider Interface
-- [ ] F-003: Anomaly Investigation Panel
-- [ ] F-004: Alert & Notification System
+### `npm run dev`
+
+Runs the app in the development mode.<br>
+Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+
+### `npm run build`
+
+Builds the app for production to the `dist` folder.<br>

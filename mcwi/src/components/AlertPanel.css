@@ -1,0 +1,144 @@
+/* Alert Panel Styles */
+
+.alert-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+}
+
+.alert-panel .panel-header h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.alert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--color-status-critical);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
+.alert-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+.alert-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-muted);
+}
+
+.alert-empty-icon {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-status-nominal);
+}
+
+.alert-item {
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.alert-item:last-child {
+  margin-bottom: 0;
+}
+
+.alert-item.critical {
+  border-left-color: var(--color-status-critical);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.alert-item.warning {
+  border-left-color: var(--color-status-warning);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.alert-item.info {
+  border-left-color: var(--color-status-info);
+}
+
+.alert-item.acknowledged {
+  opacity: 0.6;
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.alert-severity {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.alert-severity.critical {
+  background: var(--color-status-critical);
+  color: white;
+}
+
+.alert-severity.warning {
+  background: var(--color-status-warning);
+  color: black;
+}
+
+.alert-severity.info {
+  background: var(--color-status-info);
+  color: white;
+}
+
+.alert-time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.alert-message {
+  font-size: 0.875rem;
+  margin: 0 0 var(--spacing-xs) 0;
+  line-height: 1.4;
+}
+
+.alert-meta {
+  display: flex;
+  gap: var(--spacing-sm);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.alert-ship {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.alert-subsystem {
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}

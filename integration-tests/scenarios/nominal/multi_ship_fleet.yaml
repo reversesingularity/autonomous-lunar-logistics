@@ -1,0 +1,135 @@
+# Multi-Ship Fleet Operations Scenario
+# Tests fleet coordination and resource sharing
+
+name: "Multi-Ship Fleet Operations"
+description: "Validate fleet of 3 Starships coordinating lunar mission"
+version: "1.0.0"
+category: nominal
+
+# Fleet composition
+fleet:
+  - ship:
+      id: "SHIP-FLEET-001"
+      name: "Starship Alpha"
+      role: "Commander"
+      position:
+        frame: EARTH
+        x: 6771.0
+        y: 0.0
+        z: 0.0
+      resources:
+        propellant_kg: 120000
+        oxidizer_kg: 240000
+        
+  - ship:
+      id: "SHIP-FLEET-002"
+      name: "Starship Beta"
+      role: "Cargo"
+      position:
+        frame: EARTH
+        x: 6771.0
+        y: 10.0
+        z: 0.0
+      resources:
+        propellant_kg: 80000
+        oxidizer_kg: 160000
+        cargo_kg: 50000
+        
+  - ship:
+      id: "SHIP-FLEET-003"
+      name: "Starship Gamma"
+      role: "Tanker"
+      position:
+        frame: EARTH
+        x: 6771.0
+        y: -10.0
+        z: 0.0
+      resources:
+        propellant_kg: 200000
+        oxidizer_kg: 400000
+        transfer_capacity_kg: 50000
+
+# Fleet coordination phases
+coordination_phases:
+  - phase: FORMATION_ASSEMBLY
+    duration_hours: 4
+    formation:
+      type: "triangle"
+      separation_km: 50
+    objectives:
+      - "All ships in formation"
+      - "Inter-ship communication verified"
+      - "Relative navigation locked"
+      
+  - phase: SYNCHRONIZED_TLI
+    duration_hours: 0.5
+    objectives:
+      - "Coordinated TLI burn"
+      - "Formation maintained post-burn"
+      - "No collision risk detected"
+      
+  - phase: TRANSIT_OPERATIONS
+    duration_hours: 72
+    operations:
+      - type: "fuel_transfer"
+        from: "SHIP-FLEET-003"
+        to: "SHIP-FLEET-002"
+        amount_kg: 30000
+        timing_hours: 24
+      - type: "health_check"
+        frequency_hours: 6
+    objectives:
+      - "Successful fuel transfer"
+      - "Formation stable"
+      - "All ships healthy"
+      
+  - phase: LUNAR_APPROACH
+    duration_hours: 6
+    formation:
+      type: "line"
+      separation_km: 20
+    objectives:
+      - "Transition to approach formation"
+      - "LOI burns sequenced"
+
+# Expected fleet state at destination
+expected_outcome:
+  all_ships:
+    position:
+      frame: LUNAR
+      max_separation_km: 100
+    health: NOMINAL
+  specific:
+    - ship_id: "SHIP-FLEET-002"
+      cargo_delivered: true
+    - ship_id: "SHIP-FLEET-003"
+      fuel_transferred_kg: 30000
+
+# Safety constraints
+safety_constraints:
+  - id: S-006
+    name: "Collision Avoidance"
+    check: "min_inter_ship_distance > 1km"
+    priority: CRITICAL
+    
+  - id: S-002
+    name: "Communication"
+    check: "comm_link_active for all ships"
+    
+  - id: S-001
+    name: "Fleet Delta-V"
+    check: "all ships have 10% margin"
+
+# Validation assertions
+assertions:
+  - type: "fleet_integrity"
+    condition: "all_ships_arrived"
+    
+  - type: "collision_events"
+    condition: "count == 0"
+    
+  - type: "fuel_transfer_success"
+    condition: "transferred >= 29000kg"
+    
+  - type: "formation_maintenance"
+    condition: "deviations < 5%"

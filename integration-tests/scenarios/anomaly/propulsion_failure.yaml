@@ -1,0 +1,139 @@
+# Critical System Failure Scenario
+# Tests response to propulsion system malfunction
+
+name: "Propulsion System Failure"
+description: "Primary engine malfunction requiring abort decision"
+version: "1.0.0"
+category: anomaly
+severity: CRITICAL
+
+# Initial state - pre-TLI
+initial_state:
+  ship:
+    id: "SHIP-PROP-001"
+    name: "Starship Atlas"
+    position:
+      frame: EARTH
+      altitude_km: 400
+      orbital_phase: "Pre-TLI"
+    velocity:
+      orbital_speed_km_s: 7.67
+    resources:
+      propellant_kg: 95000
+      oxidizer_kg: 190000
+      battery_percent: 98
+    systems:
+      propulsion:
+        status: NOMINAL
+        engines:
+          raptor_1: NOMINAL
+          raptor_2: NOMINAL
+          raptor_3: NOMINAL
+          raptor_sea_1: NOMINAL
+          raptor_sea_2: NOMINAL
+          raptor_sea_3: NOMINAL
+
+# Anomaly injection
+anomaly:
+  type: PROPULSION_FAILURE
+  trigger:
+    phase: "TLI_BURN"
+    time_into_burn_seconds: 45
+    description: "Raptor 1 combustion instability detected"
+  characteristics:
+    failure_mode: "COMBUSTION_INSTABILITY"
+    affected_engine: "raptor_1"
+    cascade_risk: 0.15  # 15% risk of cascade to adjacent engine
+  symptoms:
+    - chamber_pressure_anomaly: "-20%"
+    - vibration_increase: "+300%"
+    - temperature_spike: "+150K"
+
+# Required AI decision tree
+ai_decision_requirements:
+  detection:
+    max_time_ms: 200
+    sensors_monitored:
+      - chamber_pressure
+      - accelerometer_array
+      - temperature_sensors
+      
+  analysis:
+    max_time_ms: 500
+    considerations:
+      - "Can burn complete with 5 engines?"
+      - "Is cascade failure imminent?"
+      - "What is abort delta-v cost?"
+      - "Crew safety assessment"
+      
+  decision_options:
+    - option: "CONTINUE_DEGRADED"
+      conditions:
+        - "No cascade indication"
+        - "5-engine thrust sufficient"
+        - "Mission success probable"
+      delta_v_impact: "-8%"
+      
+    - option: "ABORT_TO_ORBIT"
+      conditions:
+        - "Cascade likely"
+        - "Insufficient thrust margin"
+      delta_v_cost: 0.5  # km/s
+      
+    - option: "SAFE_SHUTDOWN"
+      conditions:
+        - "Imminent cascade"
+        - "Crew safety critical"
+      immediate_action: true
+
+# Safety boundaries
+safety_boundaries:
+  - id: S-001
+    name: "Delta-V After Abort"
+    check: "remaining_dv > return_requirement"
+    priority: CRITICAL
+    
+  - id: S-003
+    name: "Fuel for Safe Return"
+    check: "propellant > earth_return_min"
+    priority: CRITICAL
+    
+  - id: S-004
+    name: "Thermal Protection"
+    check: "failed_engine isolated thermally"
+    
+  - id: S-008
+    name: "Decision Latency"
+    check: "abort_decision < 2000ms"
+    priority: CRITICAL
+
+# Expected outcomes by decision
+expected_outcomes:
+  continue_degraded:
+    mission_success_probability: 0.75
+    trajectory_adjustment_required: true
+    arrival_delay_hours: 4
+    
+  abort_to_orbit:
+    safe_orbit_achieved: true
+    mission_rescheduled: true
+    ship_integrity: PRESERVED
+    
+  safe_shutdown:
+    all_engines_shutdown: true
+    drift_orbit_stable: true
+    rescue_possible: true
+
+# Validation assertions
+assertions:
+  - type: "detection_time"
+    condition: "anomaly_detected < 200ms"
+    
+  - type: "decision_time"
+    condition: "decision_made < 1500ms"
+    
+  - type: "crew_safety"
+    condition: "no_unsafe_condition"
+    
+  - type: "transparency"
+    condition: "ai_reasoning_logged"

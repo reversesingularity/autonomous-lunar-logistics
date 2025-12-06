@@ -1,0 +1,136 @@
+# Extended Lunar Surface Operations
+# Tests sustained operations in lunar orbit and surface interaction
+
+name: "Extended Lunar Surface Operations"
+description: "72-hour lunar orbital operations with surface activity coordination"
+version: "1.0.0"
+category: nominal
+
+# Initial state (ship already in lunar orbit)
+initial_state:
+  ship:
+    id: "SHIP-SURFACE-001"
+    name: "Starship Selene"
+    position:
+      frame: LUNAR
+      altitude_km: 100
+      inclination_deg: 90
+    velocity:
+      orbital_speed_km_s: 1.6
+    resources:
+      propellant_kg: 50000
+      oxidizer_kg: 100000
+      battery_percent: 100
+      life_support_days: 30
+    crew:
+      count: 4
+      specialists: ["Commander", "Pilot", "Scientist", "Engineer"]
+
+# Extended operations
+operations:
+  - operation: ORBITAL_SURVEY
+    start_hour: 0
+    duration_hours: 12
+    tasks:
+      - "High-resolution surface mapping"
+      - "Landing site verification"
+      - "Hazard identification"
+    expected_data_gb: 500
+    
+  - operation: DESCENT_PREPARATION
+    start_hour: 12
+    duration_hours: 6
+    tasks:
+      - "Landing systems check"
+      - "Descent trajectory upload"
+      - "Abort contingencies verified"
+    
+  - operation: POWERED_DESCENT
+    start_hour: 18
+    duration_hours: 0.5
+    phases:
+      - name: "Deorbit burn"
+        delta_v_km_s: 0.05
+      - name: "Approach"
+        altitude_km: 10
+      - name: "Terminal descent"
+        altitude_km: 0.1
+      - name: "Touchdown"
+        velocity_m_s: 2
+    
+  - operation: SURFACE_ACTIVITY
+    start_hour: 24
+    duration_hours: 48
+    eva_count: 4
+    tasks:
+      - "Regolith sample collection"
+      - "Equipment deployment"
+      - "Science experiments"
+      - "Base preparation"
+    
+  - operation: ASCENT
+    start_hour: 72
+    duration_hours: 0.5
+    delta_v_km_s: 2.0
+    tasks:
+      - "Powered ascent"
+      - "Orbit rendezvous"
+
+# Expected outcomes
+expected_outcome:
+  mission_success:
+    surface_time_hours: 48
+    samples_collected_kg: 50
+    experiments_completed: 5
+  resources_remaining:
+    propellant_min_kg: 10000
+    battery_min_percent: 30
+  crew_status: HEALTHY
+
+# Safety constraints for surface ops
+safety_constraints:
+  - id: S-001
+    name: "Ascent Delta-V Reserve"
+    check: "propellant > ascent_requirement * 1.2"
+    priority: CRITICAL
+    
+  - id: S-004
+    name: "Thermal During Surface Ops"
+    check: "hull_temp in safe_range for lunar_day_night"
+    
+  - id: S-005
+    name: "Radiation Exposure"
+    check: "cumulative_dose < 0.5 Sv"
+    
+  - id: S-007
+    name: "Power During Lunar Night"
+    check: "battery > 20% at all times"
+
+# Landing site
+landing_site:
+  name: "Shackleton Crater Rim"
+  coordinates:
+    latitude_deg: -89.9
+    longitude_deg: 0
+  hazards:
+    - "Permanent shadow regions"
+    - "Boulder field density: LOW"
+    - "Slope: 3 degrees"
+  advantages:
+    - "Near-continuous sunlight"
+    - "Water ice proximity"
+    - "Earth visibility"
+
+# Assertions
+assertions:
+  - type: "landing_accuracy"
+    condition: "distance_to_target < 100m"
+    
+  - type: "surface_duration"
+    condition: "actual_hours >= 47"
+    
+  - type: "crew_health"
+    condition: "all_crew_nominal"
+    
+  - type: "sample_return"
+    condition: "samples_secured >= 45kg"

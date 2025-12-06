@@ -1,0 +1,185 @@
+# Multi-System Cascade Failure
+# Tests AI response to multiple simultaneous failures
+
+name: "Multi-System Cascade Failure"
+description: "Solar event causes multiple system failures simultaneously"
+version: "1.0.0"
+category: anomaly
+severity: CRITICAL
+
+# Initial state
+initial_state:
+  ship:
+    id: "SHIP-CASCADE-001"
+    name: "Starship Phoenix"
+    position:
+      frame: TRANSIT
+      distance_from_earth_km: 280000
+      distance_to_moon_km: 104000
+    velocity:
+      transit_speed_km_s: 0.9
+    resources:
+      propellant_kg: 45000
+      battery_percent: 90
+    systems_status:
+      all: NOMINAL
+
+# Cascade trigger event
+anomaly:
+  type: MULTI_SYSTEM_CASCADE
+  trigger:
+    event: "SOLAR_PROTON_EVENT"
+    intensity: "X5.0 class flare"
+    time_hours: 36  # Mid-transit
+    warning_time_minutes: 15
+  
+  cascade_sequence:
+    - time_offset_ms: 0
+      system: COMMUNICATION
+      failure_mode: "Signal disruption"
+      severity: DEGRADED
+      
+    - time_offset_ms: 500
+      system: NAVIGATION
+      failure_mode: "Star tracker blinding"
+      severity: DEGRADED
+      
+    - time_offset_ms: 2000
+      system: POWER
+      failure_mode: "Solar array damage"
+      severity: WARNING
+      power_reduction_percent: 30
+      
+    - time_offset_ms: 5000
+      system: THERMAL
+      failure_mode: "Radiation heating"
+      severity: WARNING
+      temp_increase_k: 50
+
+# Required AI response timeline
+ai_response_requirements:
+  pre_event:  # 15 minutes warning
+    - action: "Receive solar event warning"
+      time_ms: 0
+    - action: "Orient ship for protection"
+      deadline_ms: 120000
+    - action: "Reduce power consumption"
+      deadline_ms: 180000
+    - action: "Secure volatile systems"
+      deadline_ms: 300000
+    - action: "Enable autonomous mode"
+      deadline_ms: 600000
+      
+  during_event:
+    - action: "Monitor system degradation"
+      continuous: true
+    - action: "Prioritize life support power"
+      immediate: true
+    - action: "Use inertial navigation backup"
+      on_nav_degradation: true
+    - action: "Manage thermal load"
+      continuous: true
+      
+  post_event:
+    - action: "Assess system damage"
+      deadline_ms: 60000
+    - action: "Calculate trajectory deviation"
+      deadline_ms: 120000
+    - action: "Plan recovery burns"
+      deadline_ms: 300000
+    - action: "Restore communications"
+      priority: HIGH
+
+# Resource management during crisis
+resource_priorities:
+  tier_1_critical:
+    - "Life support systems"
+    - "Core avionics"
+    - "Emergency propulsion"
+  tier_2_essential:
+    - "Primary communication"
+    - "Navigation sensors"
+    - "Thermal management"
+  tier_3_deferrable:
+    - "Science instruments"
+    - "Non-essential lighting"
+    - "Comfort systems"
+
+# Safety boundaries during cascade
+safety_boundaries:
+  - id: S-002
+    name: "Communication"
+    expected_status: VIOLATED
+    recovery_priority: HIGH
+    backup_available: "Laser comm backup"
+    
+  - id: S-004
+    name: "Thermal"
+    threshold_k: 350
+    peak_expected_k: 330
+    mitigation: "Attitude adjustment"
+    
+  - id: S-005
+    name: "Radiation Exposure"
+    crew_protection: "Shelter in shielded area"
+    max_dose_sv: 0.1
+    
+  - id: S-007
+    name: "Power Reserves"
+    min_battery_percent: 30
+    load_shedding_enabled: true
+    
+  - id: S-008
+    name: "Decision Latency"
+    max_ms: 1000
+    during_cascade: "Autonomous decisions"
+
+# Expected recovery sequence
+recovery_sequence:
+  - phase: "IMMEDIATE_STABILIZATION"
+    duration_hours: 2
+    goals:
+      - "All systems stable or isolated"
+      - "Crew safe in protected area"
+      - "Basic navigation maintained"
+      
+  - phase: "SYSTEM_RECOVERY"
+    duration_hours: 12
+    goals:
+      - "Communication restored"
+      - "Power generation recovered to 80%"
+      - "Navigation accuracy restored"
+      
+  - phase: "MISSION_ASSESSMENT"
+    duration_hours: 6
+    goals:
+      - "Full damage assessment"
+      - "Updated mission plan"
+      - "Contingency options evaluated"
+
+# Expected outcome
+expected_outcome:
+  crew_status: SAFE
+  ship_integrity: MAINTAINED
+  systems_recovered:
+    communication: NOMINAL
+    navigation: NOMINAL
+    power: DEGRADED  # 70% capacity
+    thermal: NOMINAL
+  mission_status: CONTINUE_WITH_MODIFICATIONS
+  trajectory_correction_required: true
+
+# Validation assertions
+assertions:
+  - type: "crew_safety"
+    condition: "radiation_dose < 0.1 Sv"
+    priority: CRITICAL
+    
+  - type: "autonomous_operation"
+    condition: "no_ground_contact_required_for_survival"
+    
+  - type: "system_prioritization"
+    condition: "tier_1_maintained_throughout"
+    
+  - type: "recovery_success"
+    condition: "mission_viable_post_event"

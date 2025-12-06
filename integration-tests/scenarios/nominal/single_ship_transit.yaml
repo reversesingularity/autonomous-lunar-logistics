@@ -1,0 +1,106 @@
+# Single Ship Transit Scenario
+# Tests basic Earth-Moon transit with all nominal conditions
+
+name: "Single Ship Earth-Moon Transit"
+description: "Validate a single Starship can complete Earth-Moon transit"
+version: "1.0.0"
+category: nominal
+
+# Initial conditions
+initial_state:
+  ship:
+    id: "SHIP-TEST-001"
+    name: "Starship Artemis"
+    position:
+      frame: EARTH
+      x: 6771.0  # km (LEO altitude ~400km)
+      y: 0.0
+      z: 0.0
+    velocity:
+      x: 0.0
+      y: 7.67  # km/s (orbital velocity)
+      z: 0.0
+    resources:
+      propellant_kg: 100000
+      oxidizer_kg: 200000
+      battery_percent: 95
+    health:
+      propulsion: NOMINAL
+      navigation: NOMINAL
+      communication: NOMINAL
+      power: NOMINAL
+      thermal: NOMINAL
+
+# Mission phases to execute
+mission_phases:
+  - phase: EARTH_ORBIT
+    duration_hours: 2
+    objectives:
+      - "Achieve parking orbit"
+      - "System checkout complete"
+      - "Communication link established"
+    
+  - phase: TRANS_LUNAR_INJECTION
+    duration_hours: 0.5
+    delta_v_km_s: 3.1
+    objectives:
+      - "TLI burn initiated"
+      - "Nominal trajectory achieved"
+    
+  - phase: TRANSIT
+    duration_hours: 72
+    objectives:
+      - "Mid-course correction if needed"
+      - "Systems monitoring"
+      - "Communication maintained"
+    
+  - phase: LUNAR_ORBIT_INSERTION
+    duration_hours: 0.5
+    delta_v_km_s: 0.9
+    objectives:
+      - "LOI burn successful"
+      - "Stable lunar orbit achieved"
+
+# Expected final state
+expected_outcome:
+  position:
+    frame: LUNAR
+    altitude_km: 100  # ±50km tolerance
+  velocity:
+    magnitude_km_s: 1.6  # ±0.2 km/s tolerance
+  resources:
+    min_propellant_kg: 20000  # Safety margin
+  health:
+    all_systems: NOMINAL
+
+# Safety boundaries that must be satisfied
+safety_constraints:
+  - id: S-001
+    name: "Delta-V Budget"
+    check: "remaining_delta_v > required_delta_v * 1.1"
+    
+  - id: S-003
+    name: "Fuel Reserves"
+    check: "propellant_kg > 5000"
+    
+  - id: S-004
+    name: "Thermal Limits"
+    check: "200 < hull_temp_k < 350"
+    
+  - id: S-006
+    name: "Trajectory Corridor"
+    check: "deviation_km < 100"
+
+# Validation checks
+assertions:
+  - type: "final_position"
+    condition: "distance_to_moon < 200km"
+    
+  - type: "mission_duration"
+    condition: "total_hours < 80"
+    
+  - type: "safety_violations"
+    condition: "count == 0"
+    
+  - type: "ai_confidence"
+    condition: "min_confidence > 0.85"

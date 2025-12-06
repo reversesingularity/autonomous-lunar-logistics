@@ -1,43 +1,88 @@
 # Integration Tests
 
-> **Purpose:** Validate all three segments work together  
+**Autonomous Lunar Logistics - Phase 4**
+
+> **Purpose:** Validate all three segments (OAS/GSC/MCWI) work together  
 > **Authority:** Final arbiter of system compatibility
 
-## Structure
+## Test Categories
 
-```
-integration-tests/
-├── docker-compose.yml        # Local integration environment
-├── scenarios/                # Test scenarios
-│   ├── nominal/              # Happy path tests
-│   ├── anomaly/              # Failure mode tests
-│   └── stress/               # Performance tests
-├── contract-validation/      # Schema compatibility
-└── performance/              # Latency and throughput
-```
+### Contract Validation (`contract-validation/`)
+- **validate_contracts.py** - Validates protobuf schema compatibility across segments
+- **test_telemetry_flow.py** - Tests OAS → GSC → MCWI data flow
+- **test_safety_boundaries.py** - Validates S-001 through S-008 enforcement
+- **test_scenarios.py** - Executes YAML-defined test scenarios
+- **scenario_loader.py** - Loads and parses test scenarios
 
-## Running Integration Tests
+### Test Scenarios (`scenarios/`)
+Test scenarios are defined in YAML files that describe complete mission situations.
 
-### Prerequisites
+#### Nominal Scenarios (`scenarios/nominal/`)
+- **single_ship_transit.yaml** - Basic Earth-Moon transit
+- **multi_ship_fleet.yaml** - Fleet coordination operations
+- **surface_operations.yaml** - Lunar surface activity
 
-- Docker and Docker Compose
-- Node.js 18+ (for MCWI)
-- Python 3.11+ (for GSC)
+#### Anomaly Scenarios (`scenarios/anomaly/`)
+- **communication_loss.yaml** - Comm blackout recovery
+- **propulsion_failure.yaml** - Engine failure response
+- **fuel_depletion.yaml** - Resource emergency handling
+- **cascade_failure.yaml** - Multi-system failure response
 
-### Quick Start
+## Safety Boundaries Tested
+
+| ID | Name | Description |
+|----|------|-------------|
+| S-001 | Delta-V Budget | Trajectory change limits |
+| S-002 | Communication | Max 24hr without contact |
+| S-003 | Fuel Reserves | Minimum 10% reserves |
+| S-004 | Thermal | 200-350K operational range |
+| S-005 | Radiation | Crew dose limits |
+| S-006 | Collision | Trajectory corridor maintenance |
+| S-007 | Power | Battery reserve requirements |
+| S-008 | Latency | Decision response time |
+
+## Running Tests
+
+### Local Execution
 
 ```bash
-# Start all services
-docker-compose up -d
+# Install dependencies
+pip install -r requirements.txt
 
-# Run contract validation
-python contract-validation/run_all.py
+# Run all tests
+python -m pytest contract-validation/ -v
 
-# Run scenario tests
-python -m pytest scenarios/ -v
+# Run specific test category
+python -m pytest contract-validation/test_safety_boundaries.py -v
 
-# Generate report
-python generate_report.py
+# Run with coverage
+python -m pytest contract-validation/ --cov=. --cov-report=html
+
+# Run marked tests only
+python -m pytest -m "critical" -v
+python -m pytest -m "safety" -v
+```
+
+### Docker Execution
+
+```bash
+# Run integration tests with Docker Compose
+docker-compose --profile testing up integration-tests
+
+# Run specific tests
+docker-compose run integration-tests pytest contract-validation/test_scenarios.py -v
+```
+
+### Master Test Runner
+
+```bash
+# Run all integration tests with full reporting
+cd contract-validation
+python run_all.py
+
+# Results will be in:
+# - results/integration_test_results.json
+# - results/integration_test_report.md
 ```
 
 ## Synchronization Gates

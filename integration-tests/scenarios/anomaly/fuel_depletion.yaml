@@ -1,0 +1,141 @@
+# Resource Depletion Emergency
+# Tests AI response to unexpected fuel consumption
+
+name: "Fuel Depletion Emergency"
+description: "Undetected leak causes fuel shortage mid-mission"
+version: "1.0.0"
+category: anomaly
+severity: HIGH
+
+# Initial state - lunar approach
+initial_state:
+  ship:
+    id: "SHIP-FUEL-001"
+    name: "Starship Odyssey"
+    position:
+      frame: LUNAR
+      distance_km: 50000
+      approach_phase: "PRE_LOI"
+    velocity:
+      relative_to_moon_km_s: 0.8
+    resources:
+      propellant_kg: 35000  # Nominal for LOI
+      oxidizer_kg: 70000
+      battery_percent: 75
+    expected_loi_requirement:
+      propellant_kg: 25000
+      margin_percent: 40
+
+# Anomaly - slow leak discovered
+anomaly:
+  type: RESOURCE_DEPLETION
+  trigger:
+    time_to_loi_hours: 6
+    description: "Fuel sensor anomaly investigation reveals leak"
+  characteristics:
+    leak_type: "PROPELLANT_TANK_SEAL"
+    leak_rate_kg_per_hour: 500
+    time_leaking_hours: 10  # Undetected for 10 hours
+    actual_propellant_kg: 30000  # 5000kg less than expected
+  discovery_method:
+    - "Fuel level sensor cross-check"
+    - "Mass estimation from trajectory"
+    - "Tank pressure analysis"
+
+# Resource crisis analysis
+crisis_analysis:
+  nominal_loi_cost_kg: 25000
+  available_after_leak_kg: 30000
+  margin_remaining_percent: 20  # Down from 40%
+  
+  options_analysis:
+    - option: "NOMINAL_LOI"
+      feasible: true
+      risk: "LOW margin for contingencies"
+      remaining_margin_kg: 5000
+      
+    - option: "OPTIMIZED_LOI"
+      description: "Modified trajectory, 15% less fuel"
+      feasible: true
+      propellant_saved_kg: 3750
+      remaining_margin_kg: 8750
+      trade_off: "Extended transit by 4 hours"
+      
+    - option: "ABORT_FREE_RETURN"
+      description: "Skip LOI, use gravity assist return"
+      feasible: true
+      propellant_cost_kg: 5000
+      mission_status: FAILED
+      crew_safety: ENSURED
+
+# AI decision requirements
+ai_decision_requirements:
+  immediate_actions:
+    - "Seal leak if possible"
+    - "Update resource model"
+    - "Recalculate all options"
+    - "Inform mission control"
+    
+  optimization_goals:
+    primary: "Mission success with safety margin"
+    secondary: "Maximize remaining resources"
+    constraint: "Never below S-003 threshold"
+    
+  required_calculations:
+    - "Minimum fuel for safe LOI"
+    - "Contingency reserve assessment"
+    - "Alternative trajectory analysis"
+    - "Abort fuel requirements"
+
+# Safety boundary impacts
+safety_boundaries:
+  - id: S-003
+    name: "Fuel Reserves"
+    nominal_threshold_kg: 8000
+    current_margin_kg: 5000
+    status: WARNING
+    action: "Optimize burn profile"
+    
+  - id: S-001
+    name: "Delta-V Budget"
+    recalculated: true
+    available_dv_km_s: 1.2  # Reduced from 1.5
+    required_dv_km_s: 0.9
+    margin_percent: 33
+    
+  - id: S-006
+    name: "Trajectory Options"
+    backup_trajectories: 2
+    abort_windows: 3
+
+# Expected AI decision
+expected_decision:
+  selected_option: "OPTIMIZED_LOI"
+  reasoning:
+    - "Maintains mission success"
+    - "Preserves safety margin above threshold"
+    - "Minimal mission impact"
+    - "Conservative approach to uncertainty"
+  confidence: 0.88
+
+# Outcome requirements
+expected_outcome:
+  mission_status: SUCCESS
+  loi_achieved: true
+  final_propellant_kg: ">7000"
+  leak_status: "SEALED or ISOLATED"
+  safety_violations: 0
+
+# Validation assertions
+assertions:
+  - type: "leak_detection"
+    condition: "identified_within_reasonable_time"
+    
+  - type: "resource_recalculation"
+    condition: "accurate_within_5_percent"
+    
+  - type: "decision_optimality"
+    condition: "best_outcome_selected"
+    
+  - type: "safety_maintained"
+    condition: "S-003_never_violated"

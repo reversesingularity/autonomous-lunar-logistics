@@ -1,0 +1,110 @@
+# Communication Blackout Scenario
+# Tests autonomous operation during Earth communication loss
+
+name: "Communication Blackout Recovery"
+description: "Ship loses Earth comms during transit, must operate autonomously"
+version: "1.0.0"
+category: anomaly
+severity: MEDIUM
+
+# Initial state - mid-transit
+initial_state:
+  ship:
+    id: "SHIP-BLACKOUT-001"
+    name: "Starship Mercury"
+    position:
+      frame: EARTH
+      x: 200000.0  # km from Earth
+      y: 150000.0
+      z: 0.0
+    velocity:
+      x: 0.5
+      y: 0.8
+      z: 0.0
+    resources:
+      propellant_kg: 60000
+      battery_percent: 85
+    systems:
+      communication: NOMINAL
+      navigation: NOMINAL
+      autonomy_level: 3
+
+# Anomaly injection
+anomaly:
+  type: COMMUNICATION_LOSS
+  trigger:
+    time_hours: 24
+    description: "Solar flare causes comm blackout"
+  characteristics:
+    comm_status: DEGRADED
+    signal_strength: 0.05  # 5% of normal
+    expected_duration_hours: 12
+  affected_systems:
+    - EARTH_UPLINK
+    - EARTH_DOWNLINK
+    - TELEMETRY_STREAM
+
+# Expected AI responses
+expected_ai_behavior:
+  immediate_actions:
+    - action: "Detect comm loss"
+      deadline_seconds: 30
+    - action: "Activate autonomous mode"
+      deadline_seconds: 60
+    - action: "Store telemetry locally"
+      deadline_seconds: 120
+    - action: "Increase self-diagnostic frequency"
+      deadline_seconds: 180
+      
+  ongoing_behaviors:
+    - "Continue nominal trajectory"
+    - "Preserve resources for extended autonomy"
+    - "Attempt periodic comm restoration"
+    - "Prioritize critical decisions"
+    
+  recovery_actions:
+    - action: "Detect comm restoration"
+      deadline_seconds: 30
+    - action: "Upload stored telemetry"
+      deadline_seconds: 300
+    - action: "Request trajectory verification"
+      deadline_seconds: 600
+
+# Safety boundaries during blackout
+safety_boundaries:
+  - id: S-002
+    name: "Communication Timeout"
+    status: VIOLATED  # Expected violation
+    handling: "Switch to autonomous mode"
+    
+  - id: S-008
+    name: "Decision Latency"
+    check: "local_decisions < 500ms"
+    note: "Must maintain fast local decisions"
+    
+  - id: S-001
+    name: "Delta-V Conservation"
+    check: "no_non-critical_burns"
+    note: "Preserve fuel during uncertainty"
+
+# State after recovery
+expected_outcome:
+  comm_restored: true
+  trajectory_deviation_km: "<50"
+  telemetry_gap_filled: true
+  mission_continuity: MAINTAINED
+  ai_confidence_post_recovery: ">0.90"
+
+# Validation assertions
+assertions:
+  - type: "autonomy_activation"
+    condition: "switched_to_autonomous_within_60s"
+    
+  - type: "trajectory_maintenance"
+    condition: "deviation < 100km during blackout"
+    
+  - type: "data_integrity"
+    condition: "no_telemetry_loss"
+    
+  - type: "recovery_success"
+    condition: "nominal_ops_resumed"

@@ -1,0 +1,169 @@
+# Docker Compose for Integration Testing
+# Autonomous Lunar Logistics
+# 
+# This configuration sets up all three segments for integration testing:
+# - OAS: On-board Autonomy System (C++/CUDA)
+# - GSC: Ground Simulation Core (Python)
+# - MCWI: Mission Control Web Interface (React/TypeScript)
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Ground Simulation Core (Python)
+  # ============================================================================
+  gsc:
+    build:
+      context: ./gsc
+      dockerfile: Dockerfile
+    container_name: all-gsc
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GSC_MODE=simulation
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./gsc:/app
+      - ./shared-contracts:/shared-contracts:ro
+      - gsc-data:/app/data
+    ports:
+      - "8000:8000"  # API
+      - "8001:8001"  # WebSocket telemetry
+    networks:
+      - all-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - redis
+
+  # ============================================================================
+  # Mission Control Web Interface (React/TypeScript)
+  # ============================================================================
+  mcwi:
+    build:
+      context: ./mcwi
+      dockerfile: Dockerfile
+    container_name: all-mcwi
+    environment:
+      - NODE_ENV=development
+      - VITE_GSC_API_URL=http://gsc:8000
+      - VITE_GSC_WS_URL=ws://gsc:8001
+      - VITE_CESIUM_ION_TOKEN=${CESIUM_ION_TOKEN:-}
+    volumes:
+      - ./mcwi:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"  # Vite dev server
+    networks:
+      - all-network
+    depends_on:
+      - gsc
+
+  # ============================================================================
+  # On-board Autonomy System (C++ Mock for testing)
+  # ============================================================================
+  oas-mock:
+    build:
+      context: ./oas
+      dockerfile: Dockerfile.test
+    container_name: all-oas-mock
+    environment:
+      - OAS_MODE=mock
+      - TELEMETRY_RATE_HZ=10
+      - GSC_ENDPOINT=http://gsc:8000
+    volumes:
+      - ./oas:/app
+      - ./shared-contracts:/shared-contracts:ro
+    networks:
+      - all-network
+    depends_on:
+      - gsc
+
+  # ============================================================================
+  # Integration Test Runner
+  # ============================================================================
+  integration-tests:
+    build:
+      context: ./integration-tests
+      dockerfile: Dockerfile
+    container_name: all-integration-tests
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GSC_URL=http://gsc:8000
+      - MCWI_URL=http://mcwi:5173
+      - TEST_MODE=full
+    volumes:
+      - ./integration-tests:/tests
+      - ./shared-contracts:/shared-contracts:ro
+      - test-results:/tests/results
+    networks:
+      - all-network
+    depends_on:
+      gsc:
+        condition: service_healthy
+      mcwi:
+        condition: service_started
+      oas-mock:
+        condition: service_started
+    profiles:
+      - testing
+
+  # ============================================================================
+  # Supporting Services
+  # ============================================================================
+  
+  # Redis for caching and pub/sub
+  redis:
+    image: redis:7-alpine
+    container_name: all-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - all-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # Development Tools
+  # ============================================================================
+  
+  # Protobuf compiler service
+  protoc:
+    image: namely/protoc-all:latest
+    container_name: all-protoc
+    volumes:
+      - ./shared-contracts/protobuf:/defs
+      - ./generated:/generated
+    command: ["-d", "/defs", "-o", "/generated", "-l", "python"]
+    profiles:
+      - tools
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  all-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  gsc-data:
+    driver: local
+  redis-data:
+    driver: local
+  test-results:
+    driver: local

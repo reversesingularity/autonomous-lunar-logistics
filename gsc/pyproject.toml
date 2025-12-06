@@ -1,0 +1,67 @@
+# GSC - Ground Simulation Computer
+# AI/ML Ground Station for ALLS Mission Control
+
+[project]
+name = "alls-gsc"
+version = "0.1.0"
+description = "Ground Simulation Computer for Autonomous Lunar Logistics System"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Christopher Modina", email = "c.modina@reversesingularity.com"}
+]
+keywords = ["space", "simulation", "ai", "ml", "lunar", "mission-control"]
+
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "protobuf>=4.25.0",
+    "grpcio>=1.60.0",
+    "grpcio-tools>=1.60.0",
+    "torch>=2.1.0",
+    "transformers>=4.35.0",
+    "supabase>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "structlog>=23.0.0",
+    "pydantic>=2.5.0",
+    "asyncio>=3.4.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+]
+notebook = [
+    "jupyter>=1.0.0",
+    "matplotlib>=3.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gsc"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

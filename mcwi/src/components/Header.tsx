@@ -1,4 +1,5 @@
 import type { FleetStatus } from '../types';
+import { useFleetData } from '../providers';
 import './Header.css';
 
 interface HeaderProps {
@@ -6,6 +7,7 @@ interface HeaderProps {
 }
 
 export function Header({ fleetStatus }: HeaderProps) {
+  const { dataSource, isRealtimeConnected, latency } = useFleetData();
   const criticalCount = fleetStatus?.ships.filter(s => s.overallHealth === 3).length || 0;
   const warningCount = fleetStatus?.ships.filter(s => s.overallHealth === 2).length || 0;
   const nominalCount = fleetStatus?.ships.filter(s => s.overallHealth === 1).length || 0;
@@ -55,6 +57,21 @@ export function Header({ fleetStatus }: HeaderProps) {
             {fleetStatus?.alerts.filter(a => !a.acknowledged).length || 0}
           </span>
         </div>
+
+        <div className="stat-divider" />
+
+        <div className="stat-group connection-status">
+          <span className="stat-label">Data</span>
+          <div className="data-source-badge">
+            <span 
+              className={`connection-dot ${isRealtimeConnected ? 'connected' : 'disconnected'}`}
+              title={isRealtimeConnected ? `Connected${latency ? ` (${latency}ms)` : ''}` : 'Disconnected'}
+            />
+            <span className="data-source-label">
+              {dataSource === 'supabase' ? 'Live' : 'Mock'}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="header-time">
@@ -66,3 +83,4 @@ export function Header({ fleetStatus }: HeaderProps) {
     </header>
   );
 }
+

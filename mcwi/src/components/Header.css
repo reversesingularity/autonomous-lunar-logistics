@@ -107,6 +107,50 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Connection Status */
+.connection-status {
+  min-width: 60px;
+}
+
+.data-source-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.connection-dot.connected {
+  background: var(--color-status-nominal);
+  box-shadow: 0 0 6px var(--color-status-nominal);
+}
+
+.connection-dot.disconnected {
+  background: var(--color-status-warning);
+  box-shadow: 0 0 6px var(--color-status-warning);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.data-source-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .header {

@@ -1,18 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  Viewer,
-  Entity,
-  Globe,
-  Scene,
-  SkyAtmosphere,
-} from 'resium';
-import {
   Ion,
   Cartesian3,
   Cartesian2,
   Color,
-  Viewer as CesiumViewer,
-  Entity as CesiumEntity,
+  Viewer,
+  Entity,
   ScreenSpaceEventHandler,
   ScreenSpaceEventType,
   defined,
@@ -22,12 +15,15 @@ import {
   NearFarScalar,
   DistanceDisplayCondition,
 } from 'cesium';
+import 'cesium/Build/Cesium/Widgets/widgets.css';
 import type { ShipStatus, MissionPhase } from '../types';
 import './CesiumViewer.css';
 
 // Set Cesium Ion token from environment
-const CESIUM_ION_TOKEN = import.meta.env.VITE_CESIUM_ION_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWZhdWx0LXRva2VuIiwiaWQiOjEsImlhdCI6MTYwMDAwMDAwMH0.demo-token';
-Ion.defaultAccessToken = CESIUM_ION_TOKEN;
+const CESIUM_ION_TOKEN = import.meta.env.VITE_CESIUM_ION_TOKEN || '';
+if (CESIUM_ION_TOKEN) {
+  Ion.defaultAccessToken = CESIUM_ION_TOKEN;
+}
 
 // Constants
 const EARTH_RADIUS_KM = 6371;
@@ -35,32 +31,28 @@ const MOON_RADIUS_KM = 1737;
 const EARTH_MOON_DISTANCE_KM = 384400;
 
 // Convert our coordinate system to Cesium Cartesian3
-// Our mock data uses km with Moon at ~384400 km on X axis
 function positionToCartesian(position: { x: number; y: number; z: number }, frame: 'EARTH' | 'MOON' | 'TRANSIT'): Cartesian3 {
-  // Scale factor for visualization (real scale makes Moon invisible)
-  const SCALE = 1; // 1:1 for now, can adjust for visibility
-  
   if (frame === 'EARTH') {
     // Near Earth - use lat/lon/alt
     const altitude = Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - EARTH_RADIUS_KM;
     const lat = Math.atan2(position.z, Math.sqrt(position.x ** 2 + position.y ** 2)) * (180 / Math.PI);
     const lon = Math.atan2(position.y, position.x) * (180 / Math.PI);
-    return Cartesian3.fromDegrees(lon, lat, altitude * 1000); // Convert km to meters
+    return Cartesian3.fromDegrees(lon, lat, altitude * 1000);
   } else if (frame === 'MOON') {
     // Near Moon - offset from Moon position
     const moonCenter = Cartesian3.fromDegrees(0, 0, EARTH_MOON_DISTANCE_KM * 1000);
     const offset = new Cartesian3(
-      (position.x - EARTH_MOON_DISTANCE_KM) * 1000 * SCALE,
-      position.y * 1000 * SCALE,
-      position.z * 1000 * SCALE
+      (position.x - EARTH_MOON_DISTANCE_KM) * 1000,
+      position.y * 1000,
+      position.z * 1000
     );
     return Cartesian3.add(moonCenter, offset, new Cartesian3());
   } else {
     // Transit - interpolate between Earth and Moon
     const progress = position.x / EARTH_MOON_DISTANCE_KM;
-    const lon = progress * 180 - 90; // Spread along longitude for visibility
-    const lat = (position.y / 10000) * 10; // Small latitude variation
-    const alt = EARTH_RADIUS_KM * 10 * 1000; // High altitude for visibility
+    const lon = progress * 180 - 90;
+    const lat = (position.y / 10000) * 10;
+    const alt = EARTH_RADIUS_KM * 10 * 1000;
     return Cartesian3.fromDegrees(lon, lat, alt);
   }
 }
@@ -72,8 +64,8 @@ function getShipFrame(position: { x: number; y: number; z: number }): 'EARTH' | 
     (position.x - EARTH_MOON_DISTANCE_KM) ** 2 + position.y ** 2 + position.z ** 2
   );
   
-  if (distFromEarth < EARTH_RADIUS_KM + 50000) return 'EARTH'; // Within 50,000 km of Earth
-  if (distFromMoon < MOON_RADIUS_KM + 10000) return 'MOON';    // Within 10,000 km of Moon
+  if (distFromEarth < EARTH_RADIUS_KM + 50000) return 'EARTH';
+  if (distFromMoon < MOON_RADIUS_KM + 10000) return 'MOON';
   return 'TRANSIT';
 }
 
@@ -118,10 +110,180 @@ export function CesiumGlobeViewer({
   onShipSelect,
   isLoading,
 }: CesiumViewerProps) {
-  const viewerRef = useRef<CesiumViewer | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<Viewer | null>(null);
+  const entitiesRef = useRef<Map<string, Entity>>(new Map());
   const [currentView, setCurrentView] = useState<ViewPreset>('earth');
-  const [showTrajectories, setShowTrajectories] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
+  const [showTrajectories, setShowTrajectories] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize Cesium Viewer
+  useEffect(() => {
+    if (!containerRef.current || viewerRef.current) return;
+
+    try {
+      const viewer = new Viewer(containerRef.current, {
+        animation: false,
+        timeline: false,
+        baseLayerPicker: false,
+        geocoder: false,
+        homeButton: false,
+        sceneModePicker: false,
+        navigationHelpButton: false,
+        fullscreenButton: false,
+        selectionIndicator: true,
+        infoBox: false,
+        creditContainer: document.createElement('div'), // Hide credits
+      });
+
+      // Enable lighting for realistic Earth appearance
+      viewer.scene.globe.enableLighting = true;
+
+      viewerRef.current = viewer;
+      setIsInitialized(true);
+
+      // Set initial camera position
+      viewer.camera.flyTo({
+        destination: Cartesian3.fromDegrees(-95, 30, 25000000),
+        duration: 0,
+      });
+
+      // Click handler for ship selection
+      const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
+      handler.setInputAction((movement: { position: Cartesian2 }) => {
+        const picked = viewer.scene.pick(movement.position);
+        if (defined(picked) && picked.id && picked.id.id) {
+          const entityId = picked.id.id as string;
+          if (entityId.startsWith('ship-')) {
+            const shipId = entityId.replace('ship-', '');
+            onShipSelect(shipId);
+          }
+        } else {
+          onShipSelect(null);
+        }
+      }, ScreenSpaceEventType.LEFT_CLICK);
+
+      // Cleanup
+      return () => {
+        handler.destroy();
+        if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+          viewerRef.current.destroy();
+        }
+        viewerRef.current = null;
+        setIsInitialized(false);
+      };
+    } catch (error) {
+      console.error('Failed to initialize Cesium viewer:', error);
+    }
+  }, [onShipSelect]);
+
+  // Update ship entities when ships data changes
+  useEffect(() => {
+    if (!viewerRef.current || !isInitialized) return;
+
+    const viewer = viewerRef.current;
+    const currentEntities = entitiesRef.current;
+
+    // Track which ships we've seen this update
+    const seenShips = new Set<string>();
+
+    ships.forEach((ship) => {
+      if (!ship.position) return;
+
+      const entityId = `ship-${ship.shipId}`;
+      seenShips.add(entityId);
+
+      const frame = getShipFrame(ship.position);
+      const cartesian = positionToCartesian(ship.position, frame);
+      const color = getHealthColor(ship.overallHealth);
+      const isSelected = ship.shipId === selectedShipId;
+
+      let entity = currentEntities.get(entityId);
+
+      if (entity) {
+        // Update existing entity position directly
+        (entity.position as any).setValue(cartesian);
+        if (entity.point) {
+          (entity.point.color as any).setValue(color);
+          (entity.point.pixelSize as any).setValue(isSelected ? 16 : 12);
+          (entity.point.outlineColor as any).setValue(isSelected ? Color.WHITE : Color.BLACK);
+          (entity.point.outlineWidth as any).setValue(isSelected ? 3 : 1);
+        }
+        if (entity.label) {
+          (entity.label.show as any).setValue(showLabels);
+        }
+      } else {
+        // Create new entity
+        entity = viewer.entities.add({
+          id: entityId,
+          name: ship.shipName,
+          position: cartesian,
+          point: {
+            pixelSize: isSelected ? 16 : 12,
+            color: color,
+            outlineColor: isSelected ? Color.WHITE : Color.BLACK,
+            outlineWidth: isSelected ? 3 : 1,
+            scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.5),
+          },
+          label: showLabels ? {
+            text: ship.shipName,
+            font: '12px sans-serif',
+            fillColor: Color.WHITE,
+            outlineColor: Color.BLACK,
+            outlineWidth: 2,
+            style: LabelStyle.FILL_AND_OUTLINE,
+            verticalOrigin: VerticalOrigin.BOTTOM,
+            horizontalOrigin: HorizontalOrigin.CENTER,
+            pixelOffset: new Cartesian2(0, -20),
+            scaleByDistance: new NearFarScalar(1e6, 1, 1e9, 0.3),
+            distanceDisplayCondition: new DistanceDisplayCondition(0, 5e8),
+          } : undefined,
+          description: `
+            <div style="font-family: sans-serif; padding: 8px;">
+              <h3 style="margin: 0 0 8px 0;">${ship.shipName}</h3>
+              <p><strong>ID:</strong> ${ship.shipId}</p>
+              <p><strong>Phase:</strong> ${getPhaseName(ship.phase)}</p>
+              <p><strong>AI Confidence:</strong> ${(ship.aiConfidence * 100).toFixed(1)}%</p>
+              <p><strong>Objective:</strong> ${ship.currentObjective}</p>
+            </div>
+          `,
+        });
+        currentEntities.set(entityId, entity);
+      }
+    });
+
+    // Remove entities for ships that no longer exist
+    currentEntities.forEach((entity, entityId) => {
+      if (!seenShips.has(entityId) && !entityId.startsWith('marker-')) {
+        viewer.entities.remove(entity);
+        currentEntities.delete(entityId);
+      }
+    });
+
+    // Add Moon marker if not exists
+    if (!currentEntities.has('marker-moon')) {
+      const moonEntity = viewer.entities.add({
+        id: 'marker-moon',
+        name: 'Moon',
+        position: Cartesian3.fromDegrees(0, 0, EARTH_MOON_DISTANCE_KM * 1000),
+        point: {
+          pixelSize: 20,
+          color: Color.LIGHTGRAY,
+          outlineColor: Color.WHITE,
+          outlineWidth: 2,
+        },
+        label: {
+          text: '🌙 Moon',
+          font: '14px sans-serif',
+          fillColor: Color.WHITE,
+          verticalOrigin: VerticalOrigin.BOTTOM,
+          pixelOffset: new Cartesian2(0, -25),
+        },
+      });
+      currentEntities.set('marker-moon', moonEntity);
+    }
+  }, [ships, selectedShipId, showLabels, isInitialized]);
 
   // Camera presets
   const flyToEarth = useCallback(() => {
@@ -162,7 +324,7 @@ export function CesiumGlobeViewer({
       viewerRef.current.camera.flyTo({
         destination: Cartesian3.add(
           cartesian,
-          new Cartesian3(0, 0, 5000000), // Offset camera above ship
+          new Cartesian3(0, 0, 5000000),
           new Cartesian3()
         ),
         duration: 1.5,
@@ -170,35 +332,6 @@ export function CesiumGlobeViewer({
       setCurrentView('selected');
     }
   }, [ships]);
-
-  // Handle ship selection
-  const handleEntityClick = useCallback((entity: CesiumEntity | undefined) => {
-    if (entity && entity.id && entity.id.startsWith('ship-')) {
-      const shipId = entity.id.replace('ship-', '');
-      onShipSelect(shipId);
-      flyToShip(shipId);
-    } else {
-      onShipSelect(null);
-    }
-  }, [onShipSelect, flyToShip]);
-
-  // Set up click handler
-  useEffect(() => {
-    if (viewerRef.current) {
-      const handler = new ScreenSpaceEventHandler(viewerRef.current.scene.canvas);
-      
-      handler.setInputAction((movement: { position: Cartesian2 }) => {
-        const picked = viewerRef.current?.scene.pick(movement.position);
-        if (defined(picked) && picked.id) {
-          handleEntityClick(picked.id);
-        } else {
-          onShipSelect(null);
-        }
-      }, ScreenSpaceEventType.LEFT_CLICK);
-
-      return () => handler.destroy();
-    }
-  }, [handleEntityClick, onShipSelect]);
 
   // Fly to selected ship when selection changes
   useEffect(() => {
@@ -218,97 +351,7 @@ export function CesiumGlobeViewer({
 
   return (
     <div className="cesium-viewer-container">
-      <Viewer
-        ref={(ref) => {
-          if (ref?.cesiumElement) {
-            viewerRef.current = ref.cesiumElement;
-          }
-        }}
-        full
-        timeline={false}
-        animation={false}
-        baseLayerPicker={false}
-        geocoder={false}
-        homeButton={false}
-        sceneModePicker={false}
-        navigationHelpButton={false}
-        fullscreenButton={false}
-        selectionIndicator={true}
-        infoBox={false}
-        className="cesium-viewer"
-      >
-        <Scene />
-        <Globe enableLighting={true} />
-        <SkyAtmosphere />
-
-        {/* Render ships as point entities */}
-        {ships.map((ship) => {
-          if (!ship.position) return null;
-          
-          const frame = getShipFrame(ship.position);
-          const cartesian = positionToCartesian(ship.position, frame);
-          const color = getHealthColor(ship.overallHealth);
-          const isSelected = ship.shipId === selectedShipId;
-          
-          return (
-            <Entity
-              key={ship.shipId}
-              id={`ship-${ship.shipId}`}
-              name={ship.shipName}
-              position={cartesian}
-              point={{
-                pixelSize: isSelected ? 16 : 12,
-                color: color,
-                outlineColor: isSelected ? Color.WHITE : Color.BLACK,
-                outlineWidth: isSelected ? 3 : 1,
-                scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.5),
-              }}
-              label={showLabels ? {
-                text: ship.shipName,
-                font: '12px sans-serif',
-                fillColor: Color.WHITE,
-                outlineColor: Color.BLACK,
-                outlineWidth: 2,
-                style: LabelStyle.FILL_AND_OUTLINE,
-                verticalOrigin: VerticalOrigin.BOTTOM,
-                horizontalOrigin: HorizontalOrigin.CENTER,
-                pixelOffset: new Cartesian3(0, -20, 0) as any,
-                scaleByDistance: new NearFarScalar(1e6, 1, 1e9, 0.3),
-                distanceDisplayCondition: new DistanceDisplayCondition(0, 5e8),
-              } : undefined}
-              description={`
-                <div style="font-family: sans-serif; padding: 8px;">
-                  <h3 style="margin: 0 0 8px 0;">${ship.shipName}</h3>
-                  <p><strong>ID:</strong> ${ship.shipId}</p>
-                  <p><strong>Phase:</strong> ${getPhaseName(ship.phase)}</p>
-                  <p><strong>AI Confidence:</strong> ${(ship.aiConfidence * 100).toFixed(1)}%</p>
-                  <p><strong>Objective:</strong> ${ship.currentObjective}</p>
-                </div>
-              `}
-            />
-          );
-        })}
-
-        {/* Moon marker (simplified - actual Moon would need 3D tiles) */}
-        <Entity
-          id="moon-marker"
-          name="Moon"
-          position={Cartesian3.fromDegrees(0, 0, EARTH_MOON_DISTANCE_KM * 1000)}
-          point={{
-            pixelSize: 20,
-            color: Color.LIGHTGRAY,
-            outlineColor: Color.WHITE,
-            outlineWidth: 2,
-          }}
-          label={{
-            text: '🌙 Moon',
-            font: '14px sans-serif',
-            fillColor: Color.WHITE,
-            verticalOrigin: VerticalOrigin.BOTTOM,
-            pixelOffset: new Cartesian3(0, -25, 0) as any,
-          }}
-        />
-      </Viewer>
+      <div ref={containerRef} className="cesium-viewer-element" />
 
       {/* View Controls Overlay */}
       <div className="view-controls">

@@ -19,6 +19,9 @@ import 'cesium/Build/Cesium/Widgets/widgets.css';
 import type { ShipStatus, MissionPhase } from '../types';
 import './CesiumViewer.css';
 
+// Starship image path
+const STARSHIP_IMAGE = '/starship.png';
+
 // Set Cesium Ion token from environment
 const CESIUM_ION_TOKEN = import.meta.env.VITE_CESIUM_ION_TOKEN || '';
 if (CESIUM_ION_TOKEN) {
@@ -216,13 +219,31 @@ export function CesiumGlobeViewer({
             id: entityId,
             name: ship.shipName,
             position: cartesian,
-            point: {
-              pixelSize: isSelected ? 16 : 12,
-              color: color,
-              outlineColor: isSelected ? Color.WHITE : Color.BLACK,
-              outlineWidth: isSelected ? 3 : 1,
-              scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.5),
+            // Use billboard with Starship image instead of colored dots
+            billboard: {
+              image: STARSHIP_IMAGE,
+              width: isSelected ? 64 : 48,
+              height: isSelected ? 64 : 48,
+              color: color, // Tint the image based on health status
+              verticalOrigin: VerticalOrigin.CENTER,
+              horizontalOrigin: HorizontalOrigin.CENTER,
+              scaleByDistance: new NearFarScalar(1e6, 1.5, 1e9, 0.3),
+              // Add glow effect for selected ships
+              ...(isSelected && {
+                color: Color.WHITE,
+              }),
             },
+            // Add a colored ring under selected ships
+            ...(isSelected && {
+              ellipse: {
+                semiMinorAxis: 50000,
+                semiMajorAxis: 50000,
+                material: color.withAlpha(0.3),
+                outline: true,
+                outlineColor: color,
+                outlineWidth: 2,
+              },
+            }),
             label: showLabels ? {
               text: ship.shipName,
               font: '12px sans-serif',
@@ -230,11 +251,15 @@ export function CesiumGlobeViewer({
               outlineColor: Color.BLACK,
               outlineWidth: 2,
               style: LabelStyle.FILL_AND_OUTLINE,
-              verticalOrigin: VerticalOrigin.BOTTOM,
+              verticalOrigin: VerticalOrigin.TOP,
               horizontalOrigin: HorizontalOrigin.CENTER,
-              pixelOffset: new Cartesian2(0, -20),
+              pixelOffset: new Cartesian2(0, isSelected ? 40 : 30),
               scaleByDistance: new NearFarScalar(1e6, 1, 1e9, 0.3),
               distanceDisplayCondition: new DistanceDisplayCondition(0, 5e8),
+              // Show health status color as background
+              backgroundColor: color.withAlpha(0.7),
+              backgroundPadding: new Cartesian2(6, 4),
+              showBackground: true,
             } : undefined,
             description: `
               <div style="font-family: sans-serif; padding: 8px;">
